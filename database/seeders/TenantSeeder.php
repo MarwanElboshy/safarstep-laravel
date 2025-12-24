@@ -13,6 +13,25 @@ class TenantSeeder extends Seeder
         // Create sample tenants with branding (matching SafarStep brand identity)
         $tenants = [
             [
+                'name' => 'SafarStep Tourism',
+                'slug' => 'safarstep',
+                'primary_color' => '#2A50BC',
+                'secondary_color' => '#10B981',
+                'accent_color' => '#1d4ed8',
+                'settings' => [
+                    'timezone' => 'UTC',
+                    'currency' => 'USD',
+                    'company_address' => '123 Tourism Street, Travel City, TC 12345',
+                    'company_phone' => '+1-555-0123',
+                    'company_email' => 'info@safarstep.com',
+                    'booking_prefix' => 'BK',
+                    'invoice_prefix' => 'INV',
+                    'payment_prefix' => 'PAY',
+                    'voucher_prefix' => 'VCH',
+                    'offer_prefix' => 'OFF',
+                ],
+            ],
+            [
                 'name' => 'SafarStep Demo',
                 'slug' => 'safarstep-demo',
                 'primary_color' => '#2A50BC',  // SafarStep brand primary

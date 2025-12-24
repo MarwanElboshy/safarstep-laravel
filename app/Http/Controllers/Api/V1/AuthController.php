@@ -33,7 +33,7 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
-        $user = User::where('email', $data['email'])->first();
+        $user = User::where('email', $data['email'])->with('tenant')->first();
         if (!$user || !Hash::check($data['password'], (string) $user->password)) {
             return response()->json([
                 'success' => false,
@@ -41,11 +41,14 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $tenants = [[
-            'id' => $user->tenant_id ?? 1,
-            'name' => 'Default Organization',
-            'description' => 'Your primary organization',
-        ]];
+        $tenants = [];
+        if ($user->tenant) {
+            $tenants[] = [
+                'id' => $user->tenant->id,
+                'name' => $user->tenant->name,
+                'description' => $user->tenant->slug,
+            ];
+        }
 
         return response()->json([
             'success' => true,
@@ -64,11 +67,19 @@ class AuthController extends Controller
             'device_name' => ['sometimes', 'string'],
         ]);
 
-        $user = User::where('email', $data['email'])->first();
+        $user = User::where('email', $data['email'])->with('tenant')->first();
         if (!$user || !Hash::check($data['password'], (string) $user->password)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid credentials.',
+            ], 422);
+        }
+
+        // Verify tenant_id if provided matches user's tenant
+        if (isset($data['tenant_id']) && $user->tenant_id !== $data['tenant_id']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid tenant selection.',
             ], 422);
         }
 
@@ -83,7 +94,15 @@ class AuthController extends Controller
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'tenant_id' => $user->tenant_id,
                 ],
+                'tenant' => $user->tenant ? [
+                    'id' => $user->tenant->id,
+                    'name' => $user->tenant->name,
+                    'slug' => $user->tenant->slug,
+                    'primary_color' => $user->tenant->primary_color,
+                    'secondary_color' => $user->tenant->secondary_color,
+                ] : null,
                 'permissions' => [],
             ],
         ], 200);

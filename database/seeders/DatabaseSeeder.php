@@ -16,10 +16,11 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
+            TenantSeeder::class,
             PermissionsSeeder::class,
             RolesSeeder::class,
             CurrencySeeder::class,
-            TenantSeeder::class,
+            AuthSeeder::class, // Add auth seeder with real credentials
             DestinationSeeder::class,
             HotelSeeder::class,
             AddOnSeeder::class,

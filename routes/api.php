@@ -21,7 +21,7 @@ Route::prefix('v1/auth')
 
 // V1 protected routes - tenant context required
 Route::prefix('v1')
-    ->middleware(['api', 'tenant', 'auth:sanctum'])
+    ->middleware(['api', 'tenant', 'auth:sanctum', 'enforce-tenant'])
     ->group(function () {
         // Tenants
         Route::get('tenants', [TenantController::class, 'index']);

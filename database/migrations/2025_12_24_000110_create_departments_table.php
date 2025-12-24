@@ -11,6 +11,7 @@ return new class extends Migration {
             $table->id();
             $table->uuid('tenant_id');
             $table->string('name');
+            $table->text('description')->nullable();
             $table->foreignId('parent_id')->nullable()->constrained('departments')->cascadeOnDelete();
             $table->timestamps();
 

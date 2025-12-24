@@ -10,6 +10,6 @@ class Department extends Model
     use HasFactory;
 
     protected $fillable = [
-        'tenant_id', 'name', 'parent_id',
+        'tenant_id', 'name', 'parent_id', 'description',
     ];
 }
