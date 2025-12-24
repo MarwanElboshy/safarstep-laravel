@@ -1,0 +1,221 @@
+/**
+ * SafarStep Authentication Page Styles
+ * Enhanced visual effects for login and auth pages
+ * 
+ * @version 1.0.0
+ * @since 2025-10-28
+ */
+
+/* Glassmorphism effects */
+.glassmorphism {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.glassmorphism-dark {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Enhanced text shadows for readability */
+.text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+/* Smooth backdrop blur transitions */
+.backdrop-blur-transition {
+    transition: backdrop-filter 0.3s ease-in-out;
+}
+
+/* Loading animations */
+@keyframes shimmer {
+    0% {
+        background-position: -468px 0;
+    }
+    100% {
+        background-position: 468px 0;
+    }
+}
+
+.shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, transparent 37%, #f0f0f0 63%);
+    background-size: 400% 100%;
+    animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Wallpaper specific styles */
+.wallpaper-container {
+    position: relative;
+    overflow: hidden;
+}
+
+.wallpaper-image {
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+}
+
+.wallpaper-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        135deg,
+        rgba(59, 130, 246, 0.7) 0%,
+        rgba(99, 102, 241, 0.6) 50%,
+        rgba(79, 70, 229, 0.8) 100%
+    );
+}
+
+.wallpaper-content {
+    position: relative;
+    z-index: 10;
+}
+
+/* Professional button hover effects */
+.btn-professional {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.btn-professional::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+    );
+    transition: left 0.5s;
+}
+
+.btn-professional:hover::before {
+    left: 100%;
+}
+
+/* Custom scrollbar for webkit browsers */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Enhanced input focus effects */
+.input-professional {
+    transition: all 0.2s ease-in-out;
+    border: 2px solid transparent;
+}
+
+.input-professional:focus {
+    border-color: #2A50BC;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+    .wallpaper-overlay {
+        background: linear-gradient(
+            180deg,
+            rgba(59, 130, 246, 0.8) 0%,
+            rgba(99, 102, 241, 0.7) 50%,
+            rgba(79, 70, 229, 0.9) 100%
+        );
+    }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .glassmorphism {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+    }
+}
+
+/* Animation for wallpaper loading */
+@keyframes fadeInWallpaper {
+    from {
+        opacity: 0;
+        transform: scale(1.1);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.wallpaper-fade-in {
+    animation: fadeInWallpaper 1s ease-out;
+}
+
+/* Professional loading spinner */
+.loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ffffff30;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Enhanced accessibility */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .wallpaper-overlay {
+        background: rgba(0, 0, 0, 0.8);
+    }
+    
+    .glassmorphism {
+        background: rgba(255, 255, 255, 0.9);
+        border: 2px solid #000;
+    }
+}

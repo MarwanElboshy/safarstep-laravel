@@ -15,11 +15,23 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            PermissionsSeeder::class,
+            RolesSeeder::class,
+            CurrencySeeder::class,
+            TenantSeeder::class,
+            DestinationSeeder::class,
+            HotelSeeder::class,
+            AddOnSeeder::class,
+            TagSeeder::class,
         ]);
+
+        // Sample user for local testing
+        if (class_exists(User::class) && !User::where('email', 'test@example.com')->exists()) {
+            User::factory()->create([
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+            ]);
+        }
     }
 }

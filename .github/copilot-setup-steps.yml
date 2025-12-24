@@ -1,0 +1,45 @@
+# Preinstall dependencies so Copilot coding agent can build, test, and run checks.
+# See: https://docs.github.com/en/copilot/customizing-copilot/customizing-the-development-environment-for-copilot-coding-agent
+
+steps:
+  - name: Setup Node
+    uses: actions/setup-node@v4
+    with:
+      node-version: '20'
+
+  - name: Setup PHP
+    uses: shivammathur/setup-php@v2
+    with:
+      php-version: '8.3'
+      coverage: none
+      tools: composer
+      extensions: mbstring, intl, pdo, pdo_mysql, redis
+
+  - name: Composer install
+    run: |
+      composer install --prefer-dist --no-interaction --ansi
+
+  - name: NPM install
+    run: |
+      npm ci
+
+  - name: Prepare .env and key
+    run: |
+      cp -n .env.example .env || true
+      php artisan key:generate --force
+
+  - name: Create sqlite database for tests
+    run: |
+      mkdir -p database
+      touch database/database.sqlite
+
+  - name: Run migrations (sqlite)
+    env:
+      DB_CONNECTION: sqlite
+      DB_DATABASE: database/database.sqlite
+    run: |
+      php artisan migrate --force
+
+  - name: Build frontend (optional)
+    run: |
+      npm run build --if-present

@@ -1,0 +1,75 @@
+[24-Dec-2025 14:28:46 UTC] PHP Warning:  Module "igbinary" is already loaded in Unknown on line 0
+[24-Dec-2025 14:36:40 UTC] PHP Fatal error:  Uncaught Error: Undefined constant Illuminate\Http\Middleware\TrustProxies::HEADERS_X_FORWARDED_FOR in /home/safarstep/public_html/v2/bootstrap/app.php:18
+Stack trace:
+#0 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Foundation/Configuration/ApplicationBuilder.php(281): {closure}()
+#1 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Container/Container.php(1620): Illuminate\Foundation\Configuration\ApplicationBuilder->Illuminate\Foundation\Configuration\{closure}()
+#2 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Container/Container.php(1558): Illuminate\Container\Container->fireCallbackArray()
+#3 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Container/Container.php(1544): Illuminate\Container\Container->fireAfterResolvingCallbacks()
+#4 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Container/Container.php(951): Illuminate\Container\Container->fireResolvingCallbacks()
+#5 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve()
+#6 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Container/Container.php(864): Illuminate\Foundation\Application->resolve()
+#7 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make()
+#8 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1218): Illuminate\Foundation\Application->make()
+#9 /home/safarstep/public_html/v2/public/index.php(20): Illuminate\Foundation\Application->handleRequest()
+#10 {main}
+  thrown in /home/safarstep/public_html/v2/bootstrap/app.php on line 18
+[24-Dec-2025 14:36:40 UTC] PHP Fatal error:  Uncaught Error: Undefined constant Illuminate\Http\Middleware\TrustProxies::HEADERS_X_FORWARDED_FOR in /home/safarstep/public_html/v2/bootstrap/app.php:18
+Stack trace:
+#0 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Foundation/Configuration/ApplicationBuilder.php(281): {closure}()
+#1 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Container/Container.php(1620): Illuminate\Foundation\Configuration\ApplicationBuilder->Illuminate\Foundation\Configuration\{closure}()
+#2 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Container/Container.php(1558): Illuminate\Container\Container->fireCallbackArray()
+#3 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Container/Container.php(1544): Illuminate\Container\Container->fireAfterResolvingCallbacks()
+#4 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Container/Container.php(951): Illuminate\Container\Container->fireResolvingCallbacks()
+#5 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1078): Illuminate\Container\Container->resolve()
+#6 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Container/Container.php(864): Illuminate\Foundation\Application->resolve()
+#7 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1058): Illuminate\Container\Container->make()
+#8 /home/safarstep/public_html/v2/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1218): Illuminate\Foundation\Application->make()
+#9 /home/safarstep/public_html/v2/public/index.php(20): Illuminate\Foundation\Application->handleRequest()
+#10 {main}
+  thrown in /home/safarstep/public_html/v2/bootstrap/app.php on line 18
+[24-Dec-2025 14:39:00 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 14:39:08 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 14:39:08 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 14:39:11 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 14:39:11 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 14:39:13 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 14:39:37 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 14:39:54 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 14:45:31 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 14:52:03 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 14:52:10 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 14:52:10 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:04:47 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:06:24 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:09:32 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:25:23 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:27:30 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:29:37 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:29:44 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:29:46 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:29:47 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:30:11 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:30:13 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:30:33 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:30:54 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:32:42 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:32:47 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:32:49 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:33:06 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:33:07 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:34:14 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:34:18 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:35:14 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:37:15 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:37:17 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:38:41 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:39:41 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:39:45 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:39:48 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:41:53 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:41:57 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:42:01 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:42:21 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:42:34 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:47:45 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6
+[24-Dec-2025 15:47:53 UTC] PHP Warning:  Constant LARAVEL_START already defined in /home/safarstep/public_html/v2/public/index.php on line 6

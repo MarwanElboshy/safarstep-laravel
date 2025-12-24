@@ -58,3 +58,21 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 # safarstep-laravel
+
+## Getting Started (SafarStep)
+
+- Project overview and agent guidance: see [.github/copilot-instructions.md](.github/copilot-instructions.md)
+- Environment notes and local setup: see [docs/ENVIRONMENT.md](docs/ENVIRONMENT.md)
+- Full migration roadmap: see [docs/ROADMAP.md](docs/ROADMAP.md)
+
+Quick start:
+
+```bash
+composer install
+cp -n .env.example .env
+php artisan key:generate
+php artisan migrate
+npm ci
+npm run dev
+php artisan serve
+```

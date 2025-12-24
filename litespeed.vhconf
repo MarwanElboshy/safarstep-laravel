@@ -1,0 +1,11 @@
+context /v2/ {
+  location                /home/safarstep/public_html/v2
+  allowBrowse             1
+  staticContext           /v2/public {
+    location              /home/safarstep/public_html/v2/public
+    allowBrowse           0
+  }
+  scripthandler {
+    add                   cgi:php /usr/local/lsws/fcgi-bin/lsphp
+  }
+}
