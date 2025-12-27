@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Hotel extends Model
 {
-    protected $fillable = ['destination_id', 'name', 'slug', 'description', 'stars', 'address', 'latitude', 'longitude', 'amenities', 'policies', 'contact_phone', 'contact_email', 'base_price_per_night', 'status'];
+    use HasFactory;
+    protected $fillable = ['destination_id', 'name', 'slug', 'place_id', 'description', 'stars', 'address', 'latitude', 'longitude', 'amenities', 'policies', 'contact_phone', 'contact_email', 'base_price_per_night', 'status'];
 
     protected $casts = [
         'amenities' => 'array',
@@ -20,5 +22,10 @@ class Hotel extends Model
     public function destination(): BelongsTo
     {
         return $this->belongsTo(Destination::class);
+    }
+
+    public function tenantHotels()
+    {
+        return $this->hasMany(\App\Models\TenantHotel::class);
     }
 }

@@ -28,6 +28,7 @@ class User extends Authenticatable
         'tenant_id',
         'department_id',
         'status',
+        'last_login_at',
     ];
 
     /**
@@ -41,6 +42,13 @@ class User extends Authenticatable
     ];
 
     /**
+     * The accessors to append to the model's array form.
+     *
+     * @var array
+     */
+    protected $appends = ['total_bookings', 'confirmed_bookings', 'total_revenue', 'performance'];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -49,6 +57,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
             'password' => 'hashed',
         ];
     }
@@ -58,10 +67,42 @@ class User extends Authenticatable
         return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+
     public function tenants()
     {
         // In multi-tenant system, a user can belong to multiple tenants
         // For now, return single tenant as array for compatibility
         return $this->tenant ? [$this->tenant] : [];
+    }
+
+    /**
+     * Get performance metrics (placeholder until bookings module is implemented)
+     */
+    public function getTotalBookingsAttribute(): int
+    {
+        // TODO: Calculate from bookings table when implemented
+        return 0;
+    }
+
+    public function getConfirmedBookingsAttribute(): int
+    {
+        // TODO: Calculate from bookings table when implemented
+        return 0;
+    }
+
+    public function getTotalRevenueAttribute(): float
+    {
+        // TODO: Calculate from bookings table when implemented
+        return 0.0;
+    }
+
+    public function getPerformanceAttribute(): int
+    {
+        // TODO: Calculate performance score based on metrics
+        return 0;
     }
 }

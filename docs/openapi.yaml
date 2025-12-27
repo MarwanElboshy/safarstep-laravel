@@ -6,6 +6,80 @@ info:
 servers:
   - url: http://localhost/api
 paths:
+    /v1/resources/hotels/combined:
+      get:
+        summary: Combined hotel search (Google + DB annotations)
+        parameters:
+          - in: query
+            name: search
+            schema:
+              type: string
+            description: Text query for hotel name
+          - in: query
+            name: city
+            schema:
+              type: string
+            required: true
+            description: City name to search within
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    success:
+                      type: boolean
+                    data:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          id:
+                            type: integer
+                            nullable: true
+                          name:
+                            type: string
+                          address:
+                            type: string
+                          city:
+                            type: string
+                          country:
+                            type: string
+                            nullable: true
+                          latitude:
+                            type: number
+                            format: float
+                            nullable: true
+                          longitude:
+                            type: number
+                            format: float
+                            nullable: true
+                          place_id:
+                            type: string
+                            nullable: true
+                          image_url:
+                            type: string
+                            nullable: true
+                          rating:
+                            type: number
+                            format: float
+                            nullable: true
+                          exists:
+                            type: boolean
+                          tenant_has:
+                            type: boolean
+                          tenant_hotel_id:
+                            type: integer
+                            nullable: true
+                          base_price_per_night:
+                            type: number
+                            format: float
+                            nullable: true
+                          stars:
+                            type: integer
+                            nullable: true
   /v1/auth/login:
     post:
       summary: Login

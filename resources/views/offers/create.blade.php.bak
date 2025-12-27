@@ -1,0 +1,3172 @@
+@extends('layouts.dashboard')
+
+@section('content')
+<div x-data="offerCreator()" class="min-h-screen bg-gray-50 -m-8">
+    <!-- Wide Topbar with Steps -->
+    <div class="sticky top-16 z-50 bg-white border-b shadow-sm">
+        <!-- Header Bar -->
+        <div class="border-b bg-gradient-to-r from-gray-50 to-white">
+            <div class="max-w-[1400px] mx-auto px-6 py-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-4">
+                        <a href="{{ route('offers.index') }}" class="text-gray-600 hover:text-gray-900">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                            </svg>
+                        </a>
+                        <div>
+                            <h1 class="text-lg font-bold text-gray-900">Create New Offer</h1>
+                            <p class="text-xs text-gray-500">AI-powered workflow</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button type="button" class="px-3 py-1.5 text-sm text-gray-600 hover:text-gray-900 font-medium flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                            </svg>
+                            Save Draft
+                        </button>
+                        <button type="button" class="px-4 py-1.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 text-sm font-medium">
+                            Preview
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Steps Bar -->
+        <div class="bg-white">
+            <div class="max-w-[1400px] mx-auto px-6">
+                <div class="flex items-center">
+                    <template x-for="(stepInfo, idx) in steps" :key="idx">
+                        <button 
+                            @click="currentStep = idx"
+                            type="button"
+                            class="flex-1 flex items-center gap-3 px-4 py-4 border-b-2 transition-all hover:bg-gray-50"
+                            :class="{
+                                'border-blue-600 bg-blue-50/30': idx === currentStep,
+                                'border-green-500': idx < currentStep,
+                                'border-transparent': idx > currentStep
+                            }">
+                            <!-- Step Number/Check -->
+                            <div 
+                                class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                                :class="{
+                                    'bg-green-500 text-white': idx < currentStep,
+                                    'bg-blue-600 text-white': idx === currentStep,
+                                    'bg-gray-200 text-gray-600': idx > currentStep
+                                }">
+                                <svg class="w-3 h-3" x-show="idx < currentStep" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                </svg>
+                                <span x-show="idx >= currentStep" x-text="idx + 1"></span>
+                            </div>
+                            <!-- Step Info -->
+                            <div class="flex-1 text-left">
+                                <div 
+                                    class="text-sm font-semibold"
+                                    :class="{
+                                        'text-green-700': idx < currentStep,
+                                        'text-blue-900': idx === currentStep,
+                                        'text-gray-500': idx > currentStep
+                                    }"
+                                    x-text="stepInfo.label"></div>
+                                <div 
+                                    class="text-[10px] uppercase tracking-wide"
+                                    :class="{
+                                        'text-green-600': idx < currentStep,
+                                        'text-blue-600': idx === currentStep,
+                                        'text-gray-400': idx > currentStep
+                                    }"
+                                    x-text="idx < currentStep ? 'Completed' : (idx === currentStep ? 'In Progress' : 'Pending')"></div>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content - Wider Layout -->
+    <div class="max-w-[1400px] mx-auto px-6 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Left Column - Main Form (Wider) -->
+            <div class="lg:col-span-3 space-y-6">
+                
+                <!-- STEP 1: Basic Information & AI Setup -->
+                <div x-show="currentStep === 0" x-transition class="space-y-5">
+
+                    <!-- Client Information Card - Reorganized -->
+                    <div class="bg-white rounded-lg shadow-sm border">
+                        <!-- Card Header -->
+                        <div class="px-6 py-4 border-b bg-gray-50">
+                            <h3 class="text-base font-semibold text-gray-900">Client Information</h3>
+                            <p class="text-xs text-gray-500 mt-0.5">Select client type and search or create</p>
+                        </div>
+
+                        <div class="p-6 space-y-6">
+                            <!-- Step 1: Client Type Selection (Primary) -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-3">
+                                    Client Type <span class="text-red-500">*</span>
+                                </label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button 
+                                        @click="form.client_type = 'b2c'; clearClient();"
+                                        type="button"
+                                        class="p-4 border-2 rounded-lg transition-all text-left"
+                                        :class="form.client_type === 'b2c' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="font-semibold text-gray-900">Individual (B2C)</div>
+                                                <div class="text-xs text-gray-500">Personal travel bookings</div>
+                                            </div>
+                                            <div x-show="form.client_type === 'b2c'" class="text-blue-600">
+                                                <i class="fas fa-check-circle text-xl"></i>
+                                            </div>
+                                        </div>
+                                    </button>
+                                    <button 
+                                        @click="form.client_type = 'b2b'; clearClient();"
+                                        type="button"
+                                        class="p-4 border-2 rounded-lg transition-all text-left"
+                                        :class="form.client_type === 'b2b' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                                </svg>
+                                            </div>
+                                            <div class="flex-1">
+                                                <div class="font-semibold text-gray-900">Company (B2B)</div>
+                                                <div class="text-xs text-gray-500">Corporate/agency partnerships</div>
+                                            </div>
+                                            <div x-show="form.client_type === 'b2b'" class="text-blue-600">
+                                                <i class="fas fa-check-circle text-xl"></i>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Selected Client Display -->
+                            <div x-show="form.client_id" x-transition class="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-start gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                        <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center gap-2 mb-1">
+                                            <span class="text-xs font-semibold text-green-700 uppercase">Selected</span>
+                                            <span class="text-xs px-2 py-0.5 rounded-full" 
+                                                  :class="form.client_type === 'b2b' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'"
+                                                  x-text="form.client_type === 'b2b' ? 'B2B' : 'B2C'"></span>
+                                        </div>
+                                        <div class="font-semibold text-gray-900" x-text="form.client_name"></div>
+                                        <div class="text-xs text-gray-600 mt-1 flex flex-wrap gap-x-3 gap-y-1">
+                                            <span x-show="form.client_phone">
+                                                <i class="fas fa-phone text-[10px] mr-1"></i><span x-text="form.client_phone"></span>
+                                            </span>
+                                            <span x-show="form.client_email">
+                                                <i class="fas fa-envelope text-[10px] mr-1"></i><span x-text="form.client_email"></span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button @click="clearClient()" class="text-red-600 hover:text-red-700 text-sm">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Search or Create -->
+                            <div x-show="!form.client_id" x-transition>
+                                <!-- Search Input -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Search Existing Client
+                                    </label>
+                                    <div class="relative">
+                                        <input 
+                                            type="text"
+                                            x-model="clientSearchQuery"
+                                            @input="searchClients()"
+                                            @focus="searchClients()"
+                                            class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Type name, phone, or email...">
+                                        <i class="fas fa-search absolute left-3 top-3.5 text-gray-400"></i>
+                                    </div>
+
+                                    <!-- Search Results Dropdown -->
+                                    <div x-show="clientSuggestions.length > 0" 
+                                         x-transition
+                                         class="mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        <template x-for="client in clientSuggestions" :key="client.id">
+                                            <button 
+                                                @click="selectClient(client)"
+                                                type="button"
+                                                class="w-full px-4 py-3 text-left hover:bg-gray-50 border-b last:border-b-0 transition-colors">
+                                                <div class="flex items-center gap-3">
+                                                    <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                                                        <i :class="client.type === 'b2b' ? 'fas fa-building text-purple-600' : 'fas fa-user text-blue-600'" class="text-sm"></i>
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <div class="font-medium text-gray-900 text-sm" x-text="client.name"></div>
+                                                        <div class="text-xs text-gray-500 mt-0.5 flex flex-wrap gap-x-2">
+                                                            <span x-text="client.phone || 'No phone'"></span>
+                                                            <span>•</span>
+                                                            <span x-text="client.email || 'No email'"></span>
+                                                        </div>
+                                                    </div>
+                                                    <span class="text-xs px-2 py-1 rounded-full" 
+                                                          :class="client.type === 'b2b' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'"
+                                                          x-text="client.type === 'b2b' ? 'B2B' : 'B2C'"></span>
+                                                </div>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <!-- Divider with "OR" -->
+                                <div class="relative my-6">
+                                    <div class="absolute inset-0 flex items-center">
+                                        <div class="w-full border-t border-gray-200"></div>
+                                    </div>
+                                    <div class="relative flex justify-center">
+                                        <span class="px-4 text-xs font-medium text-gray-500 bg-white uppercase">Or</span>
+                                    </div>
+                                </div>
+
+                                <!-- Create New Button -->
+                                <button 
+                                    @click="openCreateClientModal()"
+                                    type="button"
+                                    class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all">
+                                    <div class="flex items-center justify-center gap-2 text-gray-600 hover:text-blue-600">
+                                        <i class="fas fa-plus-circle"></i>
+                                        <span class="font-medium">Create New Client</span>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Travel Details Card -->
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Travel Details</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Travel Dates -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Start Date <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input 
+                                        id="start_date"
+                                        type="text"
+                                        x-model="form.start_date"
+                                        placeholder="Select start date"
+                                        class="w-full px-4 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <i class="fas fa-calendar-alt absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    End Date <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <input 
+                                        id="end_date"
+                                        type="text"
+                                        x-model="form.end_date"
+                                        placeholder="Select end date"
+                                        class="w-full px-4 py-2.5 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <i class="fas fa-calendar-alt absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"></i>
+                                </div>
+                            </div>
+
+                            <!-- Duration Display -->
+                            <div class="md:col-span-2" x-show="form.duration_days">
+                                <div class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                    <span class="text-sm text-blue-800">
+                                        <i class="fas fa-calendar-check mr-2"></i>
+                                        <strong x-text="form.duration_days"></strong> days / <strong x-text="form.duration_days - 1"></strong> nights
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Travelers -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Adults <span class="text-red-500">*</span>
+                                </label>
+                                <input 
+                                    type="number"
+                                    x-model.number="form.travelers.adults"
+                                    min="1"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Children
+                                </label>
+                                <input 
+                                    type="number"
+                                    x-model.number="form.travelers.children"
+                                    min="0"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Infants
+                                </label>
+                                <input 
+                                    type="number"
+                                    x-model.number="form.travelers.infants"
+                                    min="0"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            </div>
+
+                            <!-- Total Travelers Display -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Total</label>
+                                <div class="px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-700 font-semibold" x-text="totalTravelers + ' travelers'"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Destination & Offer Type Card -->
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Destination & Type</h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Primary Destination -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Primary Destination <span class="text-red-500">*</span>
+                                </label>
+                                <select x-model="form.primary_destination" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                    <option value="">Select Destination</option>
+                                    <template x-for="dest in destinations" :key="dest.id">
+                                        <option :value="dest.id" x-text="dest.name + ' (' + dest.country + ')'"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <!-- Offer Type -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Offer Type <span class="text-red-500">*</span>
+                                </label>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <label class="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer transition-all"
+                                           :class="form.offer_type === 'complete' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-300 hover:border-gray-400'">
+                                        <input type="radio" x-model="form.offer_type" value="complete" class="sr-only">
+                                        <i class="fas fa-suitcase text-2xl mb-2"></i>
+                                        <span class="text-sm font-medium">Complete</span>
+                                    </label>
+                                    <label class="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer transition-all"
+                                           :class="form.offer_type === 'tours' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-300 hover:border-gray-400'">
+                                        <input type="radio" x-model="form.offer_type" value="tours" class="sr-only">
+                                        <i class="fas fa-map-marked-alt text-2xl mb-2"></i>
+                                        <span class="text-sm font-medium">Tours</span>
+                                    </label>
+                                    <label class="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer transition-all"
+                                           :class="form.offer_type === 'hotel' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-300 hover:border-gray-400'">
+                                        <input type="radio" x-model="form.offer_type" value="hotel" class="sr-only">
+                                        <i class="fas fa-hotel text-2xl mb-2"></i>
+                                        <span class="text-sm font-medium">Hotel</span>
+                                    </label>
+                                    <label class="flex flex-col items-center justify-center p-4 border rounded-lg cursor-pointer transition-all"
+                                           :class="form.offer_type === 'transport' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-300 hover:border-gray-400'">
+                                        <input type="radio" x-model="form.offer_type" value="transport" class="sr-only">
+                                        <i class="fas fa-car text-2xl mb-2"></i>
+                                        <span class="text-sm font-medium">Transport</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Multi-City Toggle -->
+                            <div class="md:col-span-2">
+                                <label class="flex items-center gap-3 p-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                                    <input type="checkbox" x-model="form.is_multi_city" class="w-5 h-5 text-blue-600 rounded">
+                                    <div>
+                                        <div class="font-medium text-gray-900">Multi-City Trip</div>
+                                        <div class="text-sm text-gray-500">Enable city distribution for multiple destinations</div>
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Internal Notes -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Internal Notes
+                                </label>
+                                <textarea 
+                                    x-model="form.internal_notes"
+                                    rows="3"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 resize-none"
+                                    placeholder="Private notes, special requests, or reminders..."
+                                ></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex items-center justify-between pt-6">
+                        <button 
+                            @click="saveDraft()"
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors flex items-center gap-2">
+                            <i class="fas fa-save"></i>
+                            <span>Save Draft</span>
+                        </button>
+                        <button 
+                            @click="nextStep()"
+                            :disabled="!canProceedFromStep1"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                            <span>Continue to Next Step</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: City Distribution -->
+                <div x-show="currentStep === 1" x-transition class="space-y-6">
+                    
+                    <!-- Skip if not multi-city -->
+                    <div x-show="!form.is_multi_city" class="bg-white rounded-lg shadow-sm border p-8 text-center">
+                        <i class="fas fa-map-marker-alt text-4xl text-blue-500 mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Single Destination Trip</h3>
+                        <p class="text-gray-600 mb-6">This offer uses a single destination. Enable multi-city in Step 1 to distribute nights across multiple cities.</p>
+                        <div class="flex items-center justify-center gap-4">
+                            <button @click="prevStep()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
+                                <i class="fas fa-arrow-left mr-2"></i> Back
+                            </button>
+                            <button @click="nextStep()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                Continue <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Multi-City Distribution -->
+                    <template x-if="form.is_multi_city">
+                        <div class="space-y-6">
+                            
+                            <!-- City Selection Card -->
+                            <div class="bg-white rounded-lg shadow-sm border p-6">
+                                <div class="flex items-center justify-between mb-6">
+                                    <h3 class="text-lg font-semibold text-gray-900">Select Cities</h3>
+                                    <button 
+                                        @click="autoDistributeCities()"
+                                        class="px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition-colors text-sm font-medium border border-green-200">
+                                        <i class="fas fa-magic mr-2"></i> Auto-Distribute
+                                    </button>
+                                </div>
+
+                                <!-- City Search -->
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Search & Add Cities</label>
+                                    <div class="relative">
+                                        <input 
+                                            type="text"
+                                            x-model="citySearch"
+                                            @input="searchCitiesInDestination()"
+                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 pr-10"
+                                            placeholder="Type city name..."
+                                        >
+                                        <i class="fas fa-search absolute right-3 top-3 text-gray-400"></i>
+                                    </div>
+                                    
+                                    <!-- City Search Results -->
+                                    <div x-show="citySearchResults.length > 0" class="mt-2 border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                        <template x-for="city in citySearchResults" :key="city.id">
+                                            <button 
+                                                @click="addCity(city)"
+                                                class="w-full px-4 py-3 text-left hover:bg-blue-50 border-b last:border-b-0 transition-colors flex items-center justify-between">
+                                                <div>
+                                                    <div class="font-medium text-gray-900" x-text="city.name"></div>
+                                                    <div class="text-xs text-gray-500" x-text="city.country"></div>
+                                                </div>
+                                                <i class="fas fa-plus text-blue-600"></i>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <!-- Selected Cities -->
+                                <div class="space-y-3">
+                                    <label class="block text-sm font-medium text-gray-700">Selected Cities (<span x-text="form.cities.length"></span>)</label>
+                                    
+                                    <div x-show="form.cities.length === 0" class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                                        <i class="fas fa-city text-4xl text-gray-300 mb-2"></i>
+                                        <p class="text-sm text-gray-500">No cities added yet. Search and add cities above.</p>
+                                    </div>
+
+                                    <!-- City Cards -->
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <template x-for="(city, index) in form.cities" :key="city.id">
+                                            <div class="relative p-4 border-2 rounded-lg transition-all"
+                                                 :class="city.nights > 0 ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-white'">
+                                                <!-- Remove Button -->
+                                                <button 
+                                                    @click="removeCity(index)"
+                                                    class="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition-colors">
+                                                    <i class="fas fa-times text-xs"></i>
+                                                </button>
+                                                
+                                                <!-- City Info -->
+                                                <div class="mb-3">
+                                                    <div class="font-semibold text-gray-900 flex items-center gap-2">
+                                                        <span class="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white"
+                                                              :style="'background-color: ' + getCityColor(index)">
+                                                            <span x-text="index + 1"></span>
+                                                        </span>
+                                                        <span x-text="city.name"></span>
+                                                    </div>
+                                                    <div class="text-xs text-gray-500 ml-8" x-text="city.country"></div>
+                                                </div>
+
+                                                <!-- Night Input -->
+                                                <div class="flex items-center gap-2">
+                                                    <button 
+                                                        @click="city.nights = Math.max(0, city.nights - 1); updateCityDates()"
+                                                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-gray-200 hover:bg-gray-300 transition-colors">
+                                                        <i class="fas fa-minus text-xs"></i>
+                                                    </button>
+                                                    <div class="flex-1 text-center">
+                                                        <input 
+                                                            type="number"
+                                                            x-model.number="city.nights"
+                                                            @change="updateCityDates()"
+                                                            min="0"
+                                                            class="w-full px-2 py-1 text-center border border-gray-300 rounded font-semibold focus:ring-2 focus:ring-blue-500"
+                                                        >
+                                                        <span class="text-xs text-gray-500">nights</span>
+                                                    </div>
+                                                    <button 
+                                                        @click="city.nights++; updateCityDates()"
+                                                        class="w-8 h-8 flex items-center justify-center rounded-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors">
+                                                        <i class="fas fa-plus text-xs"></i>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Date Range Display -->
+                                                <div x-show="city.start_date && city.end_date" class="mt-3 pt-3 border-t text-xs text-gray-600">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    <span x-text="formatDate(city.start_date)"></span> - <span x-text="formatDate(city.end_date)"></span>
+                                                </div>
+
+                                                <!-- Areas Selection -->
+                                                <div class="mt-4">
+                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Areas in <span x-text="city.name"></span></label>
+                                                    <div class="flex flex-wrap gap-2">
+                                                        <template x-for="area in city.areas" :key="area.id">
+                                                            <label class="px-3 py-1 rounded-full border text-sm cursor-pointer"
+                                                                   :class="city.selectedAreas.includes(area.id) ? 'bg-blue-600 text-white border-blue-600' : 'bg-gray-100 text-gray-700 border-gray-300'">
+                                                                <input type="checkbox" class="sr-only" :value="area.id" @change="
+                                                                    $event.target.checked ? city.selectedAreas.push(area.id) : city.selectedAreas = city.selectedAreas.filter(a => a !== area.id)
+                                                                ">
+                                                                <span x-text="area.name"></span>
+                                                            </label>
+                                                        </template>
+                                                        <span x-show="city.areas.length === 0" class="text-xs text-gray-500">No areas found; try adding from Google below.</span>
+                                                    </div>
+                                                    <div class="mt-3">
+                                                        <div class="flex gap-2">
+                                                            <input type="text" x-model="city.areaSearch" @input="searchAreaPlaces(city)" class="flex-1 px-3 py-2 border rounded-lg" placeholder="Search area via Google">
+                                                            <span class="text-xs text-gray-500">Uses Google Places</span>
+                                                        </div>
+                                                        <div x-show="city.areaResults.length > 0" class="mt-2 border rounded max-h-40 overflow-y-auto">
+                                                            <template x-for="place in city.areaResults" :key="place.place_id">
+                                                                <button @click="ingestArea(place, city)" class="w-full text-left px-3 py-2 hover:bg-blue-50 border-b last:border-b-0">
+                                                                    <div class="font-medium" x-text="place.main_text"></div>
+                                                                    <div class="text-xs text-gray-500" x-text="place.secondary_text"></div>
+                                                                </button>
+                                                            </template>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Distribution Summary -->
+                                    <div x-show="form.cities.length > 0" class="mt-4 p-4 rounded-lg border-2"
+                                         :class="totalDistributedNights === totalNights ? 'border-green-500 bg-green-50' : 'border-yellow-500 bg-yellow-50'">
+                                        <div class="flex items-center justify-between">
+                                            <div>
+                                                <span class="font-semibold" x-text="totalDistributedNights"></span> / 
+                                                <span x-text="totalNights"></span> nights distributed
+                                            </div>
+                                            <div>
+                                                <template x-if="totalDistributedNights === totalNights">
+                                                    <span class="text-green-700 font-medium">
+                                                        <i class="fas fa-check-circle mr-1"></i> Complete
+                                                    </span>
+                                                </template>
+                                                <template x-if="totalDistributedNights < totalNights">
+                                                    <span class="text-yellow-700 font-medium">
+                                                        <i class="fas fa-exclamation-circle mr-1"></i> 
+                                                        <span x-text="totalNights - totalDistributedNights"></span> nights remaining
+                                                    </span>
+                                                </template>
+                                                <template x-if="totalDistributedNights > totalNights">
+                                                    <span class="text-red-700 font-medium">
+                                                        <i class="fas fa-times-circle mr-1"></i> 
+                                                        <span x-text="totalDistributedNights - totalNights"></span> nights over
+                                                    </span>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Visual Timeline -->
+                            <div x-show="form.cities.length > 0 && totalDistributedNights > 0" class="bg-white rounded-lg shadow-sm border p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Trip Timeline</h3>
+                                
+                                <div class="relative">
+                                    <!-- Timeline Bar -->
+                                    <div class="flex h-16 rounded-lg overflow-hidden border-2 border-gray-300">
+                                        <template x-for="(city, index) in form.cities.filter(c => c.nights > 0)" :key="city.id">
+                                            <div 
+                                                class="relative group cursor-pointer transition-all hover:opacity-90"
+                                                :style="'width: ' + ((city.nights / totalDistributedNights) * 100) + '%; background-color: ' + getCityColor(index)"
+                                                :title="city.name + ': ' + city.nights + ' nights'">
+                                                <div class="h-full flex items-center justify-center text-white font-semibold text-sm">
+                                                    <span x-text="city.name"></span>
+                                                </div>
+                                                <!-- Tooltip on Hover -->
+                                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                                                    <span x-text="city.name + ': ' + city.nights + ' nights'"></span>
+                                                    <div class="text-xs opacity-75 mt-1" x-show="city.start_date">
+                                                        <span x-text="formatDate(city.start_date)"></span> - <span x-text="formatDate(city.end_date)"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+
+                                    <!-- Legend -->
+                                    <div class="mt-4 flex flex-wrap gap-4">
+                                        <template x-for="(city, index) in form.cities.filter(c => c.nights > 0)" :key="city.id">
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-4 h-4 rounded" :style="'background-color: ' + getCityColor(index)"></div>
+                                                <span class="text-sm text-gray-700" x-text="city.name + ' (' + city.nights + 'n)'"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+
+                                <!-- Routing Warning -->
+                                <div x-show="hasRoutingIssues()" class="mt-4 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+                                    <div class="flex items-start gap-3">
+                                        <i class="fas fa-exclamation-triangle text-yellow-600 mt-1"></i>
+                                        <div>
+                                            <p class="text-sm font-medium text-yellow-900">Routing Suggestion</p>
+                                            <p class="text-sm text-yellow-800 mt-1">Consider reordering cities for more efficient travel. AI suggests: <span x-text="getSuggestedOrder()"></span></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- AI Recommendations Card -->
+                            <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-lightbulb text-white"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-semibold text-gray-900 mb-2">AI Recommendations</h4>
+                                        <ul class="space-y-2 text-sm text-gray-700">
+                                            <template x-for="recommendation in getCityRecommendations()" :key="recommendation">
+                                                <li class="flex items-start gap-2">
+                                                    <i class="fas fa-check-circle text-blue-600 mt-0.5"></i>
+                                                    <span x-text="recommendation"></span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Navigation Buttons -->
+                            <div class="flex items-center justify-between pt-6">
+                                <button 
+                                    @click="prevStep()"
+                                    class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors flex items-center gap-2">
+                                    <i class="fas fa-arrow-left"></i>
+                                    <span>Back</span>
+                                </button>
+                                <button 
+                                    @click="nextStep()"
+                                    :disabled="totalDistributedNights !== totalNights || form.cities.length === 0"
+                                    class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                                    <span>Continue to Resources</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- STEP 3: Day-by-Day Resources -->
+                <div x-show="currentStep === 2" x-transition class="space-y-6">
+                    
+                    <!-- Header with Resource Categories -->
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Day-by-Day Itinerary Builder</h3>
+                            <div class="flex items-center gap-2 text-sm text-gray-600">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span x-text="form.duration_days + ' days itinerary'"></span>
+                            </div>
+                        </div>
+
+                        <!-- Resource Category Tabs -->
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <button 
+                                x-show="showAccommodationTab"
+                                @click="activeResourceTab = 'accommodation'"
+                                :class="activeResourceTab === 'accommodation' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                class="px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+                                <i class="fas fa-hotel mr-2"></i>
+                                Accommodation
+                            </button>
+                            <button 
+                                x-show="showToursTab"
+                                @click="activeResourceTab = 'tours'"
+                                :class="activeResourceTab === 'tours' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                class="px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+                                <i class="fas fa-map-marked-alt mr-2"></i>
+                                Tours & Activities
+                            </button>
+                            <button 
+                                x-show="showTransportTab"
+                                @click="activeResourceTab = 'transport'"
+                                :class="activeResourceTab === 'transport' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                class="px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+                                <i class="fas fa-car mr-2"></i>
+                                Transportation
+                            </button>
+                            <button 
+                                x-show="showFlightsTab"
+                                @click="activeResourceTab = 'flights'"
+                                :class="activeResourceTab === 'flights' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                class="px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+                                <i class="fas fa-plane mr-2"></i>
+                                Flights
+                            </button>
+                            <button 
+                                x-show="showAddonsTab"
+                                @click="activeResourceTab = 'addons'"
+                                :class="activeResourceTab === 'addons' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+                                class="px-4 py-2 rounded-lg font-medium transition-colors text-sm">
+                                <i class="fas fa-plus-circle mr-2"></i>
+                                Add-ons
+                            </button>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="grid grid-cols-5 gap-4 pt-4 border-t">
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-blue-600" x-text="getResourceCount('accommodation')"></div>
+                                <div class="text-xs text-gray-600">Hotels</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-green-600" x-text="getResourceCount('tours')"></div>
+                                <div class="text-xs text-gray-600">Tours</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-yellow-600" x-text="getResourceCount('transport')"></div>
+                                <div class="text-xs text-gray-600">Vehicles</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-purple-600" x-text="getResourceCount('flights')"></div>
+                                <div class="text-xs text-gray-600">Flights</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-2xl font-bold text-pink-600" x-text="getResourceCount('addons')"></div>
+                                <div class="text-xs text-gray-600">Add-ons</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Day Cards -->
+                    <div class="space-y-4">
+                        <template x-for="(day, dayIndex) in itinerary" :key="dayIndex">
+                            <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                                <!-- Day Header -->
+                                <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                                                <span class="text-lg font-bold" x-text="dayIndex + 1"></span>
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold text-lg" x-text="'Day ' + (dayIndex + 1)"></div>
+                                                <div class="text-sm text-blue-100" x-text="formatFullDate(day.date)"></div>
+                                            </div>
+                                        </div>
+                                        <div class="text-right">
+                                            <div class="flex items-center gap-2">
+                                                <i class="fas fa-map-marker-alt"></i>
+                                                <span class="font-medium" x-text="day.city"></span>
+                                            </div>
+                                            <div class="text-xs text-blue-100 mt-1" x-show="day.isLastNight">Last Night</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Day Content -->
+                                <div class="p-6 space-y-6">
+                                    
+                                    <!-- Accommodation Section -->
+                                    <div x-show="!day.isLastNight">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="font-semibold text-gray-900 flex items-center gap-2">
+                                                <i class="fas fa-hotel text-blue-600"></i>
+                                                <span>Accommodation</span>
+                                            </h4>
+                                            <button 
+                                                @click="openResourceSelector(dayIndex, 'accommodation')"
+                                                class="text-sm text-blue-600 hover:text-blue-700 font-medium">
+                                                <i class="fas fa-plus mr-1"></i> Add Hotel
+                                            </button>
+                                        </div>
+                                        
+                                        <div x-show="!day.accommodation" class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500 text-sm">
+                                            <i class="fas fa-bed text-2xl text-gray-300 mb-2"></i>
+                                            <p>No accommodation assigned</p>
+                                        </div>
+
+                                        <div x-show="day.accommodation" class="border rounded-lg p-4 bg-gray-50">
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex-1">
+                                                    <div class="font-semibold text-gray-900" x-text="day.accommodation?.name"></div>
+                                                    <div class="text-sm text-gray-600 mt-1" x-text="day.accommodation?.room_type"></div>
+                                                    <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                                        <span><i class="fas fa-star text-yellow-500 mr-1"></i><span x-text="day.accommodation?.rating"></span></span>
+                                                        <span><i class="fas fa-utensils mr-1"></i><span x-text="day.accommodation?.meal_plan"></span></span>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    @click="removeResource(dayIndex, 'accommodation')"
+                                                    class="text-red-600 hover:text-red-700">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tours & Activities -->
+                                    <div>
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="font-semibold text-gray-900 flex items-center gap-2">
+                                                <i class="fas fa-map-marked-alt text-green-600"></i>
+                                                <span>Tours & Activities</span>
+                                            </h4>
+                                            <button 
+                                                @click="openResourceSelector(dayIndex, 'tours')"
+                                                class="text-sm text-green-600 hover:text-green-700 font-medium">
+                                                <i class="fas fa-plus mr-1"></i> Add Activity
+                                            </button>
+                                        </div>
+
+                                        <div x-show="!day.tours || day.tours.length === 0" class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500 text-sm">
+                                            <i class="fas fa-hiking text-2xl text-gray-300 mb-2"></i>
+                                            <p>No activities planned</p>
+                                        </div>
+
+                                        <div x-show="day.tours && day.tours.length > 0" class="space-y-2">
+                                            <template x-for="(tour, tourIndex) in day.tours" :key="tourIndex">
+                                                <div class="border rounded-lg p-3 bg-green-50">
+                                                    <div class="flex items-start justify-between">
+                                                        <div class="flex-1">
+                                                            <div class="font-semibold text-gray-900" x-text="tour.name"></div>
+                                                            <div class="flex items-center gap-3 mt-1 text-xs text-gray-600">
+                                                                <span><i class="fas fa-clock mr-1"></i><span x-text="tour.duration"></span></span>
+                                                                <span><i class="fas fa-users mr-1"></i><span x-text="tour.type"></span></span>
+                                                            </div>
+                                                        </div>
+                                                        <button 
+                                                            @click="removeResource(dayIndex, 'tours', tourIndex)"
+                                                            class="text-red-600 hover:text-red-700">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <!-- Transportation (City Changes) -->
+                                    <div x-show="day.isCityChange">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h4 class="font-semibold text-gray-900 flex items-center gap-2">
+                                                <i class="fas fa-car text-yellow-600"></i>
+                                                <span>Transportation</span>
+                                                <span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-700 rounded">City Change</span>
+                                            </h4>
+                                            <button 
+                                                @click="openResourceSelector(dayIndex, 'transport')"
+                                                class="text-sm text-yellow-600 hover:text-yellow-700 font-medium">
+                                                <i class="fas fa-plus mr-1"></i> Add Vehicle
+                                            </button>
+                                        </div>
+
+                                        <div x-show="!day.transport" class="p-4 border-2 border-dashed border-gray-300 rounded-lg text-center text-gray-500 text-sm">
+                                            <i class="fas fa-route text-2xl text-gray-300 mb-2"></i>
+                                            <p>Transfer to <span x-text="day.nextCity" class="font-semibold"></span></p>
+                                        </div>
+
+                                        <div x-show="day.transport" class="border rounded-lg p-4 bg-yellow-50">
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex-1">
+                                                    <div class="font-semibold text-gray-900" x-text="day.transport?.vehicle_type"></div>
+                                                    <div class="text-sm text-gray-600 mt-1">
+                                                        <span x-text="day.city"></span> → <span x-text="day.nextCity"></span>
+                                                    </div>
+                                                    <div class="text-xs text-gray-500 mt-1">
+                                                        <i class="fas fa-clock mr-1"></i><span x-text="day.transport?.duration"></span>
+                                                    </div>
+                                                </div>
+                                                <button 
+                                                    @click="removeResource(dayIndex, 'transport')"
+                                                    class="text-red-600 hover:text-red-700">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Day Notes -->
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Day Notes (Optional)</label>
+                                        <textarea 
+                                            x-model="day.notes"
+                                            rows="2"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                                            placeholder="Add any special notes or instructions for this day..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Flights Section (Separate from daily itinerary) -->
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <i class="fas fa-plane text-purple-600"></i>
+                            <span>Flight Arrangements</span>
+                        </h3>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Outbound Flight -->
+                            <div class="border rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-semibold text-gray-900 text-sm">Outbound</h4>
+                                    <button 
+                                        @click="openResourceSelector(null, 'flight_outbound')"
+                                        class="text-xs text-purple-600 hover:text-purple-700">
+                                        <i class="fas fa-plus mr-1"></i> Add
+                                    </button>
+                                </div>
+                                <div x-show="!form.flight_outbound" class="text-center py-6 text-gray-400 text-xs">
+                                    <i class="fas fa-plane-departure text-2xl mb-2"></i>
+                                    <p>No outbound flight</p>
+                                </div>
+                                <div x-show="form.flight_outbound" class="text-sm">
+                                    <div class="font-semibold" x-text="form.flight_outbound?.airline"></div>
+                                    <div class="text-xs text-gray-600 mt-1">
+                                        <span x-text="form.flight_outbound?.from"></span> → <span x-text="form.flight_outbound?.to"></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Internal Flights -->
+                            <div class="border rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-semibold text-gray-900 text-sm">Internal</h4>
+                                    <button 
+                                        @click="openResourceSelector(null, 'flight_internal')"
+                                        class="text-xs text-purple-600 hover:text-purple-700">
+                                        <i class="fas fa-plus mr-1"></i> Add
+                                    </button>
+                                </div>
+                                <div x-show="!form.internal_flights || form.internal_flights.length === 0" class="text-center py-6 text-gray-400 text-xs">
+                                    <i class="fas fa-plane text-2xl mb-2"></i>
+                                    <p>No internal flights</p>
+                                </div>
+                                <div x-show="form.internal_flights && form.internal_flights.length > 0" class="text-xs space-y-2">
+                                    <template x-for="(flight, idx) in form.internal_flights" :key="idx">
+                                        <div class="text-gray-700">
+                                            <span x-text="flight.from"></span> → <span x-text="flight.to"></span>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Return Flight -->
+                            <div class="border rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-semibold text-gray-900 text-sm">Return</h4>
+                                    <button 
+                                        @click="openResourceSelector(null, 'flight_return')"
+                                        class="text-xs text-purple-600 hover:text-purple-700">
+                                        <i class="fas fa-plus mr-1"></i> Add
+                                    </button>
+                                </div>
+                                <div x-show="!form.flight_return" class="text-center py-6 text-gray-400 text-xs">
+                                    <i class="fas fa-plane-arrival text-2xl mb-2"></i>
+                                    <p>No return flight</p>
+                                </div>
+                                <div x-show="form.flight_return" class="text-sm">
+                                    <div class="font-semibold" x-text="form.flight_return?.airline"></div>
+                                    <div class="text-xs text-gray-600 mt-1">
+                                        <span x-text="form.flight_return?.from"></span> → <span x-text="form.flight_return?.to"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add-ons Section -->
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <i class="fas fa-plus-circle text-pink-600"></i>
+                                <span>Additional Services</span>
+                            </h3>
+                            <button 
+                                @click="openResourceSelector(null, 'addon')"
+                                class="text-sm text-pink-600 hover:text-pink-700 font-medium">
+                                <i class="fas fa-plus mr-1"></i> Add Service
+                            </button>
+                        </div>
+
+                        <div x-show="!form.addons || form.addons.length === 0" class="text-center py-8 text-gray-400">
+                            <i class="fas fa-concierge-bell text-4xl mb-2"></i>
+                            <p class="text-sm">No additional services (SIM cards, visas, insurance, etc.)</p>
+                        </div>
+
+                        <div x-show="form.addons && form.addons.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <template x-for="(addon, idx) in form.addons" :key="idx">
+                                <div class="border rounded-lg p-3 bg-pink-50">
+                                    <div class="flex items-start justify-between">
+                                        <div class="flex-1">
+                                            <div class="font-semibold text-gray-900 text-sm" x-text="addon.name"></div>
+                                            <div class="text-xs text-gray-600 mt-1" x-text="addon.type"></div>
+                                        </div>
+                                        <button 
+                                            @click="form.addons.splice(idx, 1)"
+                                            class="text-red-600 hover:text-red-700">
+                                            <i class="fas fa-times text-xs"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex items-center justify-between pt-6">
+                        <button 
+                            @click="prevStep()"
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors flex items-center gap-2">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Back</span>
+                        </button>
+                        <button 
+                            @click="nextStep()"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                            <span>Continue to Pricing</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Financial Summary & Pricing -->
+                <div x-show="currentStep === 3" x-transition class="space-y-6">
+                    
+                    <!-- Overall Summary Card -->
+                    <div class="bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-lg shadow-lg p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-xl font-bold">Financial Summary</h3>
+                            <button 
+                                @click="optimizePricing()"
+                                class="px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg backdrop-blur-sm transition-colors text-sm font-medium">
+                                <i class="fas fa-magic mr-2"></i> Optimize Pricing
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-6">
+                            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                                <div class="text-sm text-blue-100 mb-1">Total Purchase Cost</div>
+                                <div class="text-3xl font-bold" x-text="formatCurrency(totalPurchaseCost)"></div>
+                            </div>
+                            <div class="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
+                                <div class="text-sm text-blue-100 mb-1">Total Sale Price</div>
+                                <div class="text-3xl font-bold" x-text="formatCurrency(totalSalePrice)"></div>
+                            </div>
+                            <div class="rounded-lg p-4 backdrop-blur-sm"
+                                 :class="profitMargin >= 15 ? 'bg-green-500/30' : profitMargin >= 5 ? 'bg-yellow-500/30' : 'bg-red-500/30'">
+                                <div class="text-sm text-white/90 mb-1">Profit Margin</div>
+                                <div class="text-3xl font-bold flex items-center gap-2">
+                                    <span x-text="profitMargin.toFixed(1) + '%'"></span>
+                                    <i class="text-lg" :class="profit >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                                </div>
+                                <div class="text-sm mt-1" x-text="formatCurrency(profit)"></div>
+                            </div>
+                        </div>
+
+                        <!-- Alerts -->
+                        <div x-show="profit < 0" class="mt-4 p-3 bg-red-500/30 border border-red-300 rounded-lg">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Warning: Sale price is lower than purchase cost. You're selling at a loss!
+                        </div>
+                        <div x-show="profit >= 0 && profitMargin < 5" class="mt-4 p-3 bg-yellow-500/30 border border-yellow-300 rounded-lg">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            Low profit margin detected. Consider adjusting prices.
+                        </div>
+                    </div>
+
+                    <!-- Category Breakdown -->
+                    <div class="grid grid-cols-1 gap-4">
+                        
+                        <!-- Accommodation Pricing -->
+                        <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                            <div class="bg-blue-50 px-6 py-4 border-b flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-hotel text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">Accommodation</h4>
+                                        <p class="text-xs text-gray-600" x-text="getResourceCount('accommodation') + ' nights'"></p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm text-gray-600">Margin</div>
+                                    <div class="text-lg font-bold" 
+                                         :class="pricing.accommodation.margin >= 10 ? 'text-green-600' : 'text-yellow-600'"
+                                         x-text="pricing.accommodation.margin.toFixed(1) + '%'"></div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Cost</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                                            <input 
+                                                type="number"
+                                                x-model.number="pricing.accommodation.purchase"
+                                                @input="calculateTotals()"
+                                                step="0.01"
+                                                class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Sale Price</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                                            <input 
+                                                type="number"
+                                                x-model.number="pricing.accommodation.sale"
+                                                @input="calculateTotals()"
+                                                step="0.01"
+                                                class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between text-sm">
+                                    <span class="text-gray-600">Profit:</span>
+                                    <span class="font-semibold" 
+                                          :class="pricing.accommodation.profit >= 0 ? 'text-green-600' : 'text-red-600'"
+                                          x-text="formatCurrency(pricing.accommodation.profit)"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tours & Activities Pricing -->
+                        <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                            <div class="bg-green-50 px-6 py-4 border-b flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-map-marked-alt text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">Tours & Activities</h4>
+                                        <p class="text-xs text-gray-600" x-text="getResourceCount('tours') + ' activities'"></p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm text-gray-600">Margin</div>
+                                    <div class="text-lg font-bold" 
+                                         :class="pricing.tours.margin >= 10 ? 'text-green-600' : 'text-yellow-600'"
+                                         x-text="pricing.tours.margin.toFixed(1) + '%'"></div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Cost</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                                            <input 
+                                                type="number"
+                                                x-model.number="pricing.tours.purchase"
+                                                @input="calculateTotals()"
+                                                step="0.01"
+                                                class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Sale Price</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                                            <input 
+                                                type="number"
+                                                x-model.number="pricing.tours.sale"
+                                                @input="calculateTotals()"
+                                                step="0.01"
+                                                class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between text-sm">
+                                    <span class="text-gray-600">Profit:</span>
+                                    <span class="font-semibold" 
+                                          :class="pricing.tours.profit >= 0 ? 'text-green-600' : 'text-red-600'"
+                                          x-text="formatCurrency(pricing.tours.profit)"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Transportation Pricing -->
+                        <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                            <div class="bg-yellow-50 px-6 py-4 border-b flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-yellow-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-car text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">Transportation</h4>
+                                        <p class="text-xs text-gray-600" x-text="getResourceCount('transport') + ' transfers'"></p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm text-gray-600">Margin</div>
+                                    <div class="text-lg font-bold" 
+                                         :class="pricing.transport.margin >= 10 ? 'text-green-600' : 'text-yellow-600'"
+                                         x-text="pricing.transport.margin.toFixed(1) + '%'"></div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Cost</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                                            <input 
+                                                type="number"
+                                                x-model.number="pricing.transport.purchase"
+                                                @input="calculateTotals()"
+                                                step="0.01"
+                                                class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Sale Price</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                                            <input 
+                                                type="number"
+                                                x-model.number="pricing.transport.sale"
+                                                @input="calculateTotals()"
+                                                step="0.01"
+                                                class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between text-sm">
+                                    <span class="text-gray-600">Profit:</span>
+                                    <span class="font-semibold" 
+                                          :class="pricing.transport.profit >= 0 ? 'text-green-600' : 'text-red-600'"
+                                          x-text="formatCurrency(pricing.transport.profit)"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Flights Pricing -->
+                        <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                            <div class="bg-purple-50 px-6 py-4 border-b flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-plane text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">Flights</h4>
+                                        <p class="text-xs text-gray-600" x-text="getResourceCount('flights') + ' segments'"></p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm text-gray-600">Margin</div>
+                                    <div class="text-lg font-bold" 
+                                         :class="pricing.flights.margin >= 10 ? 'text-green-600' : 'text-yellow-600'"
+                                         x-text="pricing.flights.margin.toFixed(1) + '%'"></div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Cost</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                                            <input 
+                                                type="number"
+                                                x-model.number="pricing.flights.purchase"
+                                                @input="calculateTotals()"
+                                                step="0.01"
+                                                class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Sale Price</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                                            <input 
+                                                type="number"
+                                                x-model.number="pricing.flights.sale"
+                                                @input="calculateTotals()"
+                                                step="0.01"
+                                                class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between text-sm">
+                                    <span class="text-gray-600">Profit:</span>
+                                    <span class="font-semibold" 
+                                          :class="pricing.flights.profit >= 0 ? 'text-green-600' : 'text-red-600'"
+                                          x-text="formatCurrency(pricing.flights.profit)"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add-ons Pricing -->
+                        <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                            <div class="bg-pink-50 px-6 py-4 border-b flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 bg-pink-600 rounded-lg flex items-center justify-center">
+                                        <i class="fas fa-plus-circle text-white"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-semibold text-gray-900">Additional Services</h4>
+                                        <p class="text-xs text-gray-600" x-text="getResourceCount('addons') + ' services'"></p>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-sm text-gray-600">Margin</div>
+                                    <div class="text-lg font-bold" 
+                                         :class="pricing.addons.margin >= 10 ? 'text-green-600' : 'text-yellow-600'"
+                                         x-text="pricing.addons.margin.toFixed(1) + '%'"></div>
+                                </div>
+                            </div>
+                            <div class="p-6">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Purchase Cost</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                                            <input 
+                                                type="number"
+                                                x-model.number="pricing.addons.purchase"
+                                                @input="calculateTotals()"
+                                                step="0.01"
+                                                class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Sale Price</label>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2.5 text-gray-500">$</span>
+                                            <input 
+                                                type="number"
+                                                x-model.number="pricing.addons.sale"
+                                                @input="calculateTotals()"
+                                                step="0.01"
+                                                class="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-center justify-between text-sm">
+                                    <span class="text-gray-600">Profit:</span>
+                                    <span class="font-semibold" 
+                                          :class="pricing.addons.profit >= 0 ? 'text-green-600' : 'text-red-600'"
+                                          x-text="formatCurrency(pricing.addons.profit)"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Pricing Actions -->
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <h4 class="font-semibold text-gray-900 mb-4">Quick Actions</h4>
+                        <div class="grid grid-cols-3 gap-4">
+                            <button 
+                                @click="applyMarkup(15)"
+                                class="px-4 py-3 border-2 border-green-500 text-green-700 rounded-lg hover:bg-green-50 transition-colors">
+                                <div class="text-lg font-bold">+15%</div>
+                                <div class="text-xs">Standard Markup</div>
+                            </button>
+                            <button 
+                                @click="applyMarkup(20)"
+                                class="px-4 py-3 border-2 border-blue-500 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors">
+                                <div class="text-lg font-bold">+20%</div>
+                                <div class="text-xs">Premium Markup</div>
+                            </button>
+                            <button 
+                                @click="applyMarkup(10)"
+                                class="px-4 py-3 border-2 border-yellow-500 text-yellow-700 rounded-lg hover:bg-yellow-50 transition-colors">
+                                <div class="text-lg font-bold">+10%</div>
+                                <div class="text-xs">Budget Markup</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex items-center justify-between pt-6">
+                        <button 
+                            @click="prevStep()"
+                            class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors flex items-center gap-2">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Back</span>
+                        </button>
+                        <button 
+                            @click="nextStep()"
+                            class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                            <span>Continue to Details</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 5: Inclusions & Exclusions -->
+                <div x-show="currentStep === 4" x-transition class="space-y-6">
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Inclusions & Exclusions</h3>
+                            <div class="flex items-center gap-2">
+                                <button @click="applyStandardSet()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm">
+                                    <i class="fas fa-check mr-2"></i> Apply Standard Set
+                                </button>
+                                <button @click="clearInclusionsExclusions()" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm">
+                                    <i class="fas fa-broom mr-2"></i> Clear All
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Suggestions Banner -->
+                        <div class="p-4 bg-blue-50 border border-blue-200 rounded-lg mb-6">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-magic text-blue-600 mt-0.5"></i>
+                                <div class="text-sm text-blue-900">
+                                    Smart suggestions based on your itinerary and selected resources are listed below. You can toggle items on or off.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Inclusions -->
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-gray-900 flex items-center gap-2">
+                                        <i class="fas fa-plus-circle text-green-600"></i>
+                                        <span>Inclusions</span>
+                                    </h4>
+                                    <button @click="selectAll('inclusions')" class="text-xs text-green-700 hover:text-green-800">
+                                        Select All
+                                    </button>
+                                </div>
+                                <div class="space-y-2">
+                                    <template x-for="(item, idx) in inclusionSuggestions" :key="'inc-' + idx">
+                                        <label class="flex items-start gap-3 p-3 border rounded-lg hover:bg-green-50 cursor-pointer">
+                                            <input type="checkbox" :checked="form.inclusions.includes(item)" @change="toggleInclusion(item)" class="mt-0.5">
+                                            <div class="text-sm text-gray-800" x-text="item"></div>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Exclusions -->
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-semibold text-gray-900 flex items-center gap-2">
+                                        <i class="fas fa-minus-circle text-red-600"></i>
+                                        <span>Exclusions</span>
+                                    </h4>
+                                    <button @click="selectAll('exclusions')" class="text-xs text-red-700 hover:text-red-800">
+                                        Select All
+                                    </button>
+                                </div>
+                                <div class="space-y-2">
+                                    <template x-for="(item, idx) in exclusionSuggestions" :key="'exc-' + idx">
+                                        <label class="flex items-start gap-3 p-3 border rounded-lg hover:bg-red-50 cursor-pointer">
+                                            <input type="checkbox" :checked="form.exclusions.includes(item)" @change="toggleExclusion(item)" class="mt-0.5">
+                                            <div class="text-sm text-gray-800" x-text="item"></div>
+                                        </label>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Items -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Add Custom Inclusion</label>
+                                <div class="flex gap-2">
+                                    <input x-model="customInclusion" type="text" class="flex-1 px-3 py-2 border rounded-lg" placeholder="e.g., Complimentary welcome drink">
+                                    <button @click="addCustom('inclusion')" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">Add</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Add Custom Exclusion</label>
+                                <div class="flex gap-2">
+                                    <input x-model="customExclusion" type="text" class="flex-1 px-3 py-2 border rounded-lg" placeholder="e.g., Personal expenses">
+                                    <button @click="addCustom('exclusion')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Add</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="flex items-center justify-between pt-2">
+                        <button @click="prevStep()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors flex items-center gap-2">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Back</span>
+                        </button>
+                        <button @click="nextStep()" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                            <span>Continue to Review</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 6: Review & Finalize -->
+                <div x-show="currentStep === 5" x-transition class="space-y-6">
+                    
+                    <!-- Validation Checklist -->
+                    <div class="bg-white rounded-lg shadow-sm border p-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Validation Checklist</h3>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-center gap-2" :class="canProceedFromStep1 ? 'text-green-700' : 'text-red-700'">
+                                <i :class="canProceedFromStep1 ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                                Basic information complete
+                            </li>
+                            <li class="flex items-center gap-2" :class="(totalDistributedNights === totalNights) ? 'text-green-700' : 'text-red-700'">
+                                <i :class="(totalDistributedNights === totalNights) ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                                City night distribution matches trip nights
+                            </li>
+                            <li class="flex items-center gap-2" :class="(itinerary.length === form.duration_days) ? 'text-green-700' : 'text-red-700'">
+                                <i :class="(itinerary.length === form.duration_days) ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                                Itinerary generated for all days
+                            </li>
+                            <li class="flex items-center gap-2" :class="(totalSalePrice >= totalPurchaseCost) ? 'text-green-700' : 'text-red-700'">
+                                <i :class="(totalSalePrice >= totalPurchaseCost) ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+                                Pricing is not a loss
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Summary Preview -->
+                    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                        <div class="bg-gray-50 px-6 py-4 border-b">
+                            <h3 class="text-lg font-semibold text-gray-900">Offer Summary</h3>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Client & Trip Info -->
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Client & Trip</h4>
+                                    <ul class="text-sm text-gray-700 space-y-1">
+                                        <li><span class="font-medium">Client:</span> <span x-text="form.client_name"></span> (<span x-text="form.client_type.toUpperCase()"></span>)</li>
+                                        <li><span class="font-medium">Dates:</span> <span x-text="form.start_date"></span> → <span x-text="form.end_date"></span> (<span x-text="form.duration_days + ' days'"></span>)</li>
+                                        <li><span class="font-medium">Travelers:</span> <span x-text="totalTravelers"></span></li>
+                                        <li><span class="font-medium">Destination:</span> <span x-text="form.primary_destination"></span></li>
+                                    </ul>
+                                </div>
+                                <!-- Pricing -->
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Pricing</h4>
+                                    <ul class="text-sm text-gray-700 space-y-1">
+                                        <li><span class="font-medium">Purchase:</span> <span x-text="formatCurrency(totalPurchaseCost)"></span></li>
+                                        <li><span class="font-medium">Sale:</span> <span x-text="formatCurrency(totalSalePrice)"></span></li>
+                                        <li><span class="font-medium">Profit:</span> <span x-text="formatCurrency(profit)"></span> (<span x-text="profitMargin.toFixed(1) + '%'"></span>)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Cities Timeline -->
+                            <div>
+                                <h4 class="font-semibold text-gray-900 mb-3">Cities & Nights</h4>
+                                <div class="flex h-10 rounded-lg overflow-hidden border-2 border-gray-300">
+                                    <template x-for="(city, index) in form.cities.filter(c => c.nights > 0)" :key="city.id">
+                                        <div class="flex-1" :style="'background-color: ' + getCityColor(index)" :title="city.name + ' (' + city.nights + 'n)'"></div>
+                                    </template>
+                                </div>
+                                <div class="mt-2 text-xs text-gray-600">
+                                    <template x-for="(city, index) in form.cities.filter(c => c.nights > 0)" :key="city.id">
+                                        <span class="mr-3">
+                                            <span class="inline-block w-3 h-3 rounded align-middle mr-1" :style="'background-color: ' + getCityColor(index)"></span>
+                                            <span x-text="city.name + ' (' + city.nights + 'n)'"></span>
+                                        </span>
+                                    </template>
+                                </div>
+                            </div>
+
+                            <!-- Inclusions/Exclusions -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-2">Inclusions</h4>
+                                    <ul class="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                                        <template x-for="(item, idx) in form.inclusions" :key="'fin-inc-' + idx">
+                                            <li x-text="item"></li>
+                                        </template>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-2">Exclusions</h4>
+                                    <ul class="text-sm text-gray-700 space-y-1 list-disc list-inside">
+                                        <template x-for="(item, idx) in form.exclusions" :key="'fin-exc-' + idx">
+                                            <li x-text="item"></li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Final Actions -->
+                    <div class="flex items-center justify-between">
+                        <button @click="prevStep()" class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors flex items-center gap-2">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>Back</span>
+                        </button>
+                        <div class="flex items-center gap-3">
+                            <button @click="submitOffer()" :disabled="!canSubmitOffer()" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                                <i class="fas fa-check mr-2"></i> Save Offer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column - Progress Summary -->
+            <div class="space-y-6 sticky top-56 self-start">
+                <!-- AI Assistant Banner -->
+                <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-lg p-5 shadow-lg text-white">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                            <i class="fas fa-magic text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base">SafarStep AI</h3>
+                            <p class="text-xs text-blue-100">Your Smart Assistant</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-blue-50 mb-4 leading-relaxed">Describe what your client needs, and I'll create the perfect offer instantly.</p>
+                    <button 
+                        @click="showAIModal = true"
+                        class="w-full px-4 py-2.5 bg-white text-blue-600 rounded-lg hover:bg-blue-50 transition-colors font-semibold text-sm flex items-center justify-center gap-2">
+                        <i class="fas fa-sparkles"></i>
+                        <span>Try AI Assistant</span>
+                    </button>
+                </div>
+
+                <!-- Progress Card -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Progress</h3>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mb-6">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-700">Completion</span>
+                            <span class="text-sm font-semibold text-blue-600" x-text="completionPercentage + '%'"></span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="'width: ' + completionPercentage + '%'"></div>
+                        </div>
+                    </div>
+
+                    <!-- Checklist -->
+                    <div class="space-y-3">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle text-lg" :class="form.client_name ? 'text-green-500' : 'text-gray-300'"></i>
+                            <span class="text-sm" :class="form.client_name ? 'text-gray-900 font-medium' : 'text-gray-500'">Client selected</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle text-lg" :class="form.start_date && form.end_date ? 'text-green-500' : 'text-gray-300'"></i>
+                            <span class="text-sm" :class="form.start_date && form.end_date ? 'text-gray-900 font-medium' : 'text-gray-500'">Dates selected</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle text-lg" :class="form.travelers.adults > 0 ? 'text-green-500' : 'text-gray-300'"></i>
+                            <span class="text-sm" :class="form.travelers.adults > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'">Travelers added</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle text-lg" :class="form.primary_destination ? 'text-green-500' : 'text-gray-300'"></i>
+                            <span class="text-sm" :class="form.primary_destination ? 'text-gray-900 font-medium' : 'text-gray-500'">Destination set</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-check-circle text-lg" :class="form.offer_type ? 'text-green-500' : 'text-gray-300'"></i>
+                            <span class="text-sm" :class="form.offer_type ? 'text-gray-900 font-medium' : 'text-gray-500'">Offer type chosen</span>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="mt-6 pt-6 border-t">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-3">Quick Summary</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between" x-show="form.client_name">
+                                <span class="text-gray-600">Client:</span>
+                                <span class="text-gray-900 font-medium" x-text="form.client_name"></span>
+                            </div>
+                            <div class="flex justify-between" x-show="form.duration_days">
+                                <span class="text-gray-600">Duration:</span>
+                                <span class="text-gray-900 font-medium" x-text="form.duration_days + ' days'"></span>
+                            </div>
+                            <div class="flex justify-between" x-show="totalTravelers">
+                                <span class="text-gray-600">Travelers:</span>
+                                <span class="text-gray-900 font-medium" x-text="totalTravelers"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Tips Card -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+                    <h4 class="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-lightbulb"></i>
+                        AI Tips
+                    </h4>
+                    <ul class="space-y-2 text-sm text-blue-800">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-blue-600 mt-1"></i>
+                            <span>Use AI Quick Start to generate a complete offer structure</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-blue-600 mt-1"></i>
+                            <span>Search existing clients for faster booking</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-blue-600 mt-1"></i>
+                            <span>Enable multi-city for complex itineraries</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create New Client Modal -->
+    <div x-show="showCreateCustomerModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-50" @click="showCreateCustomerModal = false"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full">
+                <!-- Header -->
+                <div class="flex items-center justify-between p-6 border-b">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900">Create New Client</h3>
+                        <p class="text-sm text-gray-600 mt-1">Fill in the details to create a new client</p>
+                    </div>
+                    <button @click="showCreateCustomerModal = false" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- Form Content -->
+                <div class="p-6 space-y-4">
+                    <!-- Client Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Client Name <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="text"
+                            x-model="newClientForm.name"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                            placeholder="Full name or company name"
+                        >
+                    </div>
+
+                    <!-- Phone and Email Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Client Phone (Required) -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Phone <span class="text-red-500">*</span>
+                            </label>
+                            <input 
+                                type="tel"
+                                x-model="newClientForm.phone"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                placeholder="+1 555 123 4567"
+                            >
+                        </div>
+
+                        <!-- Client Email (Optional) -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Email <span class="text-gray-400">(optional)</span>
+                            </label>
+                            <input 
+                                type="email"
+                                x-model="newClientForm.email"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                placeholder="client@example.com"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Nationality and Country Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Nationality -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Nationality <span class="text-gray-400">(optional)</span>
+                            </label>
+                            <input 
+                                type="text"
+                                x-model="newClientForm.nationality"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., American"
+                            >
+                        </div>
+
+                        <!-- Country -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Country <span class="text-gray-400">(optional)</span>
+                            </label>
+                            <input 
+                                type="text"
+                                x-model="newClientForm.country"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                placeholder="e.g., USA"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Lead Source -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Lead Source <span class="text-gray-400">(optional)</span>
+                        </label>
+                        <select 
+                            x-model="newClientForm.source"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                            <option value="">Select Source</option>
+                            <option value="website">Website</option>
+                            <option value="referral">Referral</option>
+                            <option value="social_media">Social Media</option>
+                            <option value="phone_call">Phone Call</option>
+                            <option value="email">Email</option>
+                            <option value="walk_in">Walk In</option>
+                            <option value="partner">Partner</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Client Type (Read-only, inherited from main selection) -->
+                    <div class="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                        <label class="block text-xs font-medium text-gray-600 mb-1">Client Type</label>
+                        <div class="flex items-center gap-2">
+                            <i :class="newClientForm.type === 'b2b' ? 'fas fa-building text-blue-600' : 'fas fa-user text-blue-600'"></i>
+                            <span class="font-semibold text-gray-900" x-text="newClientForm.type === 'b2b' ? 'B2B (Company)' : 'B2C (Individual)'"></span>
+                        </div>
+                    </div>
+
+                    <!-- Company Selection (B2B Only) -->
+                    <div x-show="newClientForm.type === 'b2b'" x-cloak>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Select Company <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="text"
+                                x-model="companySearch"
+                                @input="searchCompanies()"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                                placeholder="Search company by name..."
+                            >
+                            <!-- Company Search Results -->
+                            <div x-show="showCompanyResults && companyResults.length > 0" 
+                                 class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                <template x-for="company in companyResults" :key="company.id">
+                                    <div @click="selectCompany(company)"
+                                         class="px-4 py-3 hover:bg-blue-50 cursor-pointer border-b last:border-b-0">
+                                        <div class="font-medium text-gray-900" x-text="company.name"></div>
+                                        <div class="text-sm text-gray-600">
+                                            <span x-text="company.email || 'No email'"></span>
+                                            <span x-show="company.phone"> • <span x-text="company.phone"></span></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                            <!-- Selected Company Display -->
+                            <div x-show="newClientForm.company_id" class="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-medium text-green-900" x-text="newClientForm.company_name"></div>
+                                        <div class="text-sm text-green-700">Selected Company</div>
+                                    </div>
+                                    <button @click="clearCompany()" type="button" class="text-green-700 hover:text-green-900">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex gap-3 p-6 border-t bg-gray-50">
+                    <button 
+                        @click="showCreateCustomerModal = false"
+                        type="button"
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                        Cancel
+                    </button>
+                    <button 
+                        @click="createNewClient()"
+                        :disabled="creatingClient || !newClientForm.name || !newClientForm.phone"
+                        class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        <i class="fas fa-spinner fa-spin" x-show="creatingClient"></i>
+                        <span x-text="creatingClient ? 'Creating...' : 'Create Client'"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Assistant Modal -->
+    <div x-show="showAIModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-50" @click="showAIModal = false"></div>
+        
+        <!-- Modal Content -->
+        <div class="relative min-h-screen flex items-center justify-center p-4">
+            <div class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full">
+                <!-- Header -->
+                <div class="flex items-center justify-between p-6 border-b bg-gradient-to-r from-blue-50 to-indigo-50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-magic text-white"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">SafarStep AI Assistant</h3>
+                            <p class="text-sm text-gray-600">Describe your client's needs</p>
+                        </div>
+                    </div>
+                    <button @click="showAIModal = false" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-2xl"></i>
+                    </button>
+                </div>
+
+                <!-- Form Content -->
+                <div class="p-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        What does your client want?
+                    </label>
+                    <textarea 
+                        x-model="aiPrompt"
+                        rows="6"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                        placeholder="Example: Family of 4 wants 7 days in Turkey, visiting Istanbul and Cappadocia, moderate budget around $3000, interested in cultural tours and hot air balloon ride, traveling in July..."
+                    ></textarea>
+                    
+                    <p class="text-xs text-gray-500 mt-2">
+                        <i class="fas fa-lightbulb text-yellow-500 mr-1"></i>
+                        Be specific about: destination, duration, budget, traveler count, interests, and travel dates
+                    </p>
+
+                    <!-- AI Result Preview -->
+                    <div x-show="aiResult" x-transition class="mt-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                        <div class="flex items-start justify-between mb-2">
+                            <span class="text-sm font-semibold text-green-700">
+                                <i class="fas fa-check-circle mr-1"></i> AI Suggestion Ready
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-700" x-text="aiResult?.summary"></p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="flex gap-3 p-6 border-t bg-gray-50">
+                    <button 
+                        @click="showAIModal = false"
+                        type="button"
+                        class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium">
+                        Cancel
+                    </button>
+                    <button 
+                        @click="generateWithAI(); showAIModal = false;"
+                        :disabled="!aiPrompt || aiLoading"
+                        class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                        <i class="fas fa-sparkles" x-show="!aiLoading"></i>
+                        <i class="fas fa-spinner fa-spin" x-show="aiLoading"></i>
+                        <span x-text="aiLoading ? 'Generating...' : 'Generate with AI'"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function offerCreator() {
+    return {
+        currentStep: 0,
+        autoSaving: false,
+        aiLoading: false,
+        aiPrompt: '',
+        aiResult: null,
+        showClientSearch: false,
+        clientSearchQuery: '',
+        clientSuggestions: [],
+        showCreateCustomerModal: false,
+        showAIModal: false,
+        creatingClient: false,
+        newClientForm: {
+            name: '',
+            phone: '',
+            email: '',
+            nationality: '',
+            country: '',
+            source: '',
+            type: 'b2c',
+            company_id: null,
+            company_name: ''
+        },
+        
+        // Company fields for B2B
+        companySearch: '',
+        companyResults: [],
+        selectedCompany: null,
+        showCompanyResults: false,
+        showCompanyDropdown: false,
+        showCreateCompany: false,
+        
+        steps: [
+            { label: 'Basic Info', icon: 'info-circle' },
+            { label: 'Cities', icon: 'map' },
+            { label: 'Resources', icon: 'hotel' },
+            { label: 'Pricing', icon: 'dollar' },
+            { label: 'Details', icon: 'list' },
+            { label: 'Review', icon: 'check' }
+        ],
+
+        form: {
+            client_name: '',
+            client_type: 'b2c',
+            client_id: null,
+            company_id: null,
+            client_email: '',
+            client_phone: '',
+            client_nationality: '',
+            client_country: '',
+            client_source: '',
+            department_id: '',
+            start_date: '',
+            end_date: '',
+            duration_days: 0,
+            travelers: {
+                adults: 1,
+                children: 0,
+                infants: 0
+            },
+            primary_destination: '',
+            offer_type: '',
+            is_multi_city: false,
+            internal_notes: '',
+            cities: [],
+            flight_outbound: null,
+            internal_flights: [],
+            flight_return: null,
+            addons: [],
+            inclusions: [],
+            exclusions: []
+        },
+
+        departments: [],
+        destinations: [],
+        citySearch: '',
+        citySearchResults: [],
+        cityColors: ['#2A50BC', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'],
+        activeResourceTab: 'accommodation',
+        customInclusion: '',
+        customExclusion: '',
+
+        pricing: {
+            accommodation: { purchase: 0, sale: 0, profit: 0, margin: 0 },
+            tours: { purchase: 0, sale: 0, profit: 0, margin: 0 },
+            transport: { purchase: 0, sale: 0, profit: 0, margin: 0 },
+            flights: { purchase: 0, sale: 0, profit: 0, margin: 0 },
+            addons: { purchase: 0, sale: 0, profit: 0, margin: 0 }
+        },
+
+        get totalTravelers() {
+            return this.form.travelers.adults + this.form.travelers.children + this.form.travelers.infants;
+        },
+
+        get totalPurchaseCost() {
+            return Object.values(this.pricing).reduce((sum, cat) => sum + (cat.purchase || 0), 0);
+        },
+
+        get totalSalePrice() {
+            return Object.values(this.pricing).reduce((sum, cat) => sum + (cat.sale || 0), 0);
+        },
+
+        get profit() {
+            return this.totalSalePrice - this.totalPurchaseCost;
+        },
+
+        get profitMargin() {
+            if (this.totalPurchaseCost === 0) return 0;
+            return (this.profit / this.totalPurchaseCost) * 100;
+        },
+
+        get totalNights() {
+            return Math.max(0, this.form.duration_days - 1);
+        },
+
+        get totalDistributedNights() {
+            return this.form.cities.reduce((sum, city) => sum + (city.nights || 0), 0);
+        },
+
+        get itinerary() {
+            if (!this.form.start_date || !this.form.duration_days) return [];
+            
+            const days = [];
+            let currentDate = new Date(this.form.start_date);
+            
+            for (let i = 0; i < this.form.duration_days; i++) {
+                const day = {
+                    date: new Date(currentDate),
+                    dayNumber: i + 1,
+                    city: this.getCityForDay(i),
+                    isLastNight: i === this.form.duration_days - 1,
+                    isCityChange: this.isCityChangeDay(i),
+                    nextCity: this.getNextCity(i),
+                    accommodation: null,
+                    tours: [],
+                    transport: null,
+                    notes: ''
+                };
+                days.push(day);
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            return days;
+        },
+
+        // Inclusions/Exclusions suggestions
+        get inclusionSuggestions() {
+            const suggestions = new Set();
+            // Hotels
+            if (this.itinerary.some(d => d.accommodation)) {
+                suggestions.add('Accommodation in selected hotels');
+                suggestions.add('Daily breakfast at hotel');
+            }
+            // Tours
+            if (this.itinerary.some(d => d.tours && d.tours.length)) {
+                suggestions.add('Guided tours as per itinerary');
+                suggestions.add('Entrance fees to mentioned attractions');
+            }
+            // Transport
+            if (this.itinerary.some(d => d.transport)) {
+                suggestions.add('Private transfers between cities');
+                suggestions.add('Airport pickup and drop-off');
+            }
+            // Flights
+            if (this.form.flight_outbound || (this.form.internal_flights?.length) || this.form.flight_return) {
+                suggestions.add('Domestic and international flight tickets');
+                suggestions.add('Checked baggage allowance per airline policy');
+            }
+            // Add-ons
+            if (this.form.addons?.length) {
+                suggestions.add('SIM cards for connectivity');
+                suggestions.add('Travel insurance');
+            }
+            return Array.from(suggestions);
+        },
+        get exclusionSuggestions() {
+            const suggestions = new Set([
+                'Personal expenses',
+                'Meals not mentioned in the program',
+                'Optional tours and activities',
+                'Visa fees (unless specified)',
+                'Tips and gratuities',
+            ]);
+            // If no flights selected, exclude flights
+            if (!this.form.flight_outbound && !(this.form.internal_flights?.length) && !this.form.flight_return) {
+                suggestions.add('International and domestic flights');
+            }
+            return Array.from(suggestions);
+        },
+
+        toggleInclusion(item) {
+            const idx = this.form.inclusions.indexOf(item);
+            if (idx >= 0) this.form.inclusions.splice(idx, 1);
+            else this.form.inclusions.push(item);
+        },
+        toggleExclusion(item) {
+            const idx = this.form.exclusions.indexOf(item);
+            if (idx >= 0) this.form.exclusions.splice(idx, 1);
+            else this.form.exclusions.push(item);
+        },
+        selectAll(type) {
+            if (type === 'inclusions') this.form.inclusions = [...this.inclusionSuggestions];
+            if (type === 'exclusions') this.form.exclusions = [...this.exclusionSuggestions];
+        },
+        clearInclusionsExclusions() {
+            this.form.inclusions = [];
+            this.form.exclusions = [];
+        },
+        addCustom(type) {
+            if (type === 'inclusion' && this.customInclusion?.trim()) {
+                this.form.inclusions.push(this.customInclusion.trim());
+                this.customInclusion = '';
+            }
+            if (type === 'exclusion' && this.customExclusion?.trim()) {
+                this.form.exclusions.push(this.customExclusion.trim());
+                this.customExclusion = '';
+            }
+        },
+        applyStandardSet() {
+            // Basic standard per destination
+            this.selectAll('inclusions');
+            this.selectAll('exclusions');
+        },
+
+        canSubmitOffer() {
+            return this.canProceedFromStep1 &&
+                   this.totalDistributedNights === this.totalNights &&
+                   this.itinerary.length === this.form.duration_days &&
+                   this.totalSalePrice >= this.totalPurchaseCost &&
+                   this.form.inclusions.length > 0;
+        },
+        async submitOffer() {
+            if (!this.canSubmitOffer()) return;
+
+            const payload = {
+                title: `Offer: ${this.form.primary_destination} (${this.form.duration_days} days)`,
+                start_date: this.form.start_date,
+                end_date: this.form.end_date,
+                duration_days: this.form.duration_days,
+                country_id: this.form.primary_destination,
+                cities: this.form.cities.map(c => ({ name: c.name, nights: c.nights })),
+                itinerary: this.itinerary.map(d => ({
+                    date: d.date,
+                    city: d.city,
+                    accommodation: d.accommodation,
+                    tours: d.tours,
+                    transport: d.transport,
+                    notes: d.notes
+                })),
+                pricing: this.pricing,
+                price_per_person: this.totalTravelers > 0 ? (this.totalSalePrice / this.totalTravelers) : this.totalSalePrice,
+                flights: {
+                    outbound: this.form.flight_outbound,
+                    internal: this.form.internal_flights,
+                    return: this.form.flight_return
+                },
+                addons: this.form.addons,
+                inclusions: this.form.inclusions,
+                exclusions: this.form.exclusions,
+                meta: {
+                    offer_type: this.form.offer_type,
+                    travelers: this.form.travelers,
+                    client: { id: this.form.client_id, name: this.form.client_name, type: this.form.client_type },
+                    department_id: this.form.department_id ? parseInt(this.form.department_id) : null,
+                    notes: this.form.internal_notes
+                }
+            };
+
+            try {
+                const response = await fetch('{{ url('/api/v1/offers') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(payload)
+                });
+                const data = await response.json();
+                if (data.success) {
+                    alert('Offer saved successfully');
+                    // Optionally redirect
+                    // window.location.href = `${window.appConfig.baseUrl}/dashboard/offers/${data.data.id}`;
+                } else {
+                    alert('Failed to save offer: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error('Save offer error:', err);
+                alert('An error occurred while saving the offer');
+            }
+        },
+
+        get completionPercentage() {
+            let completed = 0;
+            const checks = [
+                this.form.client_name,
+                this.form.start_date && this.form.end_date,
+                this.form.travelers.adults > 0,
+                this.form.primary_destination,
+                this.form.offer_type
+            ];
+            completed = checks.filter(Boolean).length;
+            return Math.round((completed / checks.length) * 100);
+        },
+
+        get canProceedFromStep1() {
+            return this.form.department_id &&
+                   this.form.start_date && 
+                   this.form.end_date &&
+                   this.form.travelers.adults > 0 &&
+                   this.form.primary_destination &&
+                   this.form.offer_type;
+        },
+
+        async init() {
+            await this.loadDepartments();
+            await this.loadDestinations();
+        },
+
+        async loadDepartments() {
+            try {
+                const response = await fetch('{{ url('/api/v1/departments') }}', {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.departments = data.data;
+                }
+            } catch (error) {
+                console.error('Failed to load departments:', error);
+            }
+        },
+
+        async loadDestinations() {
+            try {
+                const response = await fetch('{{ url('/api/v1/countries') }}', {
+                    headers: { 'X-Tenant-ID': window.appConfig?.tenantId }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.destinations = data.data;
+                }
+            } catch (error) {
+                console.error('Failed to load destinations:', error);
+            }
+        },
+
+        calculateDuration() {
+            if (this.form.start_date && this.form.end_date) {
+                const start = new Date(this.form.start_date);
+                const end = new Date(this.form.end_date);
+                const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+                this.form.duration_days = diff > 0 ? diff : 0;
+            }
+        },
+
+        async generateWithAI() {
+            if (!this.aiPrompt) return;
+            
+            this.aiLoading = true;
+            try {
+                const requestBody = { 
+                    prompt: this.aiPrompt
+                };
+                
+                // Only include department_id if it has a valid value
+                if (this.form.department_id) {
+                    requestBody.department_id = parseInt(this.form.department_id);
+                }
+                
+                const response = await fetch('{{ url('/api/v1/offers/generate-from-prompt') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify(requestBody)
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    this.aiResult = data.data;
+                } else {
+                    alert('AI generation failed: ' + data.message);
+                }
+            } catch (error) {
+                console.error('AI generation error:', error);
+                alert('Failed to generate offer with AI');
+            } finally {
+                this.aiLoading = false;
+            }
+        },
+
+        applyAISuggestion() {
+            if (!this.aiResult) return;
+            
+            // Apply AI suggestions to form
+            if (this.aiResult.title) this.form.title = this.aiResult.title;
+            if (this.aiResult.duration_days) this.form.duration_days = this.aiResult.duration_days;
+            if (this.aiResult.destination) this.form.primary_destination = this.aiResult.destination;
+            if (this.aiResult.travelers) this.form.travelers = { ...this.form.travelers, ...this.aiResult.travelers };
+            
+            this.aiResult = null;
+        },
+
+        async searchClients() {
+            if (this.clientSearchQuery.length < 2) {
+                this.clientSuggestions = [];
+                return;
+            }
+            try {
+                const resp = await fetch(`{{ url('/api/v1/customers/search') }}?query=${encodeURIComponent(this.clientSearchQuery)}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'include'
+                });
+                const data = await resp.json();
+                this.clientSuggestions = data.success ? data.data : [];
+            } catch (e) {
+                console.error('Customer search failed', e);
+                this.clientSuggestions = [];
+            }
+        },
+
+        selectClient(client) {
+            // Map database customer_type back to UI values
+            const typeMap = {
+                'individual': 'b2c',
+                'corporate': 'b2b',
+                'group': 'b2b'
+            };
+            
+            this.form.client_id = client.id;
+            this.form.client_name = client.name;
+            this.form.client_type = typeMap[client.type] || 'b2c';
+            this.form.client_email = client.email || '';
+            this.form.client_phone = client.phone || '';
+            this.clientSuggestions = [];
+            this.clientSearchQuery = '';
+            this.showClientSearch = false;
+        },
+
+        clearClient() {
+            this.form.client_id = null;
+            this.form.client_name = '';
+            this.form.client_email = '';
+            this.form.client_phone = '';
+            this.form.client_nationality = '';
+            this.form.client_country = '';
+            this.form.client_source = '';
+            this.clientSearchQuery = '';
+        },
+
+        // Open create client modal and inherit type from main section
+        openCreateClientModal() {
+            // Inherit the client type from the main section selection
+            this.newClientForm.type = this.form.client_type;
+            this.showCreateCustomerModal = true;
+        },
+
+        async createNewClient() {
+            if (!this.newClientForm.name || !this.newClientForm.phone) {
+                alert('Please fill in name and phone');
+                return;
+            }
+
+            // For B2B clients, company selection is required
+            if (this.newClientForm.type === 'b2b' && !this.newClientForm.company_id) {
+                alert('Please select a company for B2B clients');
+                return;
+            }
+
+            this.creatingClient = true;
+            
+            try {
+                const parts = this.newClientForm.name.trim().split(' ');
+                const first = parts[0];
+                const last = parts.slice(1).join(' ');
+                
+                const resp = await fetch(`{{ url('/api/v1/customers') }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        first_name: first,
+                        last_name: last,
+                        email: this.newClientForm.email || null,
+                        phone: this.newClientForm.phone,
+                        nationality: this.newClientForm.nationality || null,
+                        country: this.newClientForm.country || null,
+                        source: this.newClientForm.source || null,
+                        customer_type: this.newClientForm.type,
+                        company_id: this.newClientForm.company_id || null
+                    })
+                });
+                
+                const data = await resp.json();
+                if (data.success) {
+                    // Select the newly created client
+                    this.selectClient(data.data);
+                    
+                    // Close modal and reset form
+                    this.showCreateCustomerModal = false;
+                    this.newClientForm = {
+                        name: '',
+                        phone: '',
+                        email: '',
+                        nationality: '',
+                        country: '',
+                        source: '',
+                        type: 'b2c',
+                        company_id: null,
+                        company_name: ''
+                    };
+                    
+                    alert('Client created successfully!');
+                } else {
+                    alert('Failed to create client: ' + (data.message || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('Create customer failed', e);
+                alert('Unable to create client');
+            } finally {
+                this.creatingClient = false;
+            }
+        },
+
+        // Company search functions for B2B client creation
+        async searchCompanies() {
+            if (this.companySearch.length < 2) {
+                this.companyResults = [];
+                this.showCompanyResults = false;
+                return;
+            }
+
+            try {
+                const response = await fetch(`{{ url('/api/v1/companies/search') }}?q=${encodeURIComponent(this.companySearch)}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'include'
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    this.companyResults = data.data || [];
+                    this.showCompanyResults = true;
+                }
+            } catch (error) {
+                console.error('Company search failed:', error);
+            }
+        },
+
+        selectCompany(company) {
+            this.newClientForm.company_id = company.id;
+            this.newClientForm.company_name = company.name;
+            this.companySearch = '';
+            this.showCompanyResults = false;
+            this.companyResults = [];
+        },
+
+        clearCompany() {
+            this.newClientForm.company_id = null;
+            this.newClientForm.company_name = '';
+            this.companySearch = '';
+        },
+
+        async createCustomer() {
+            if (!this.canCreateCustomer) {
+                alert('Please fill in all required fields: Name, Phone, Type, and Department');
+                return;
+            }
+            const parts = this.form.client_name.trim().split(' ');
+            const first = parts[0];
+            const last = parts.slice(1).join(' ');
+            try {
+                const resp = await fetch(`{{ url('/api/v1/customers') }}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        first_name: first,
+                        last_name: last,
+                        email: this.form.client_email || null,
+                        phone: this.form.client_phone,
+                        nationality: this.form.client_nationality || null,
+                        country: this.form.client_country || null,
+                        source: this.form.client_source || null,
+                        customer_type: this.form.client_type
+                    })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    this.selectClient(data.data);
+                    alert('Client created successfully!');
+                } else {
+                    alert('Failed to create client: ' + (data.message || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('Create customer failed', e);
+                alert('Unable to create client');
+            }
+        },
+
+        get canCreateCustomer() {
+            return this.form.client_name && 
+                   this.form.client_phone && 
+                   this.form.client_type && 
+                   this.form.department_id;
+        },
+
+        // Company methods for B2B
+        async searchCompanies() {
+            if (this.companySearch.length < 2) {
+                this.companyResults = [];
+                return;
+            }
+            try {
+                const resp = await fetch(`{{ url('/api/v1/companies/search') }}?query=${encodeURIComponent(this.companySearch)}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'include'
+                });
+                const data = await resp.json();
+                this.companyResults = data.success ? data.data : [];
+                this.showCompanyDropdown = true;
+            } catch (e) {
+                console.error('Company search failed', e);
+                this.companyResults = [];
+            }
+        },
+
+        selectCompany(company) {
+            this.selectedCompany = company;
+            this.form.company_id = company.id;
+            this.companySearch = '';
+            this.companyResults = [];
+            this.showCompanyDropdown = false;
+        },
+
+        clearCompany() {
+            this.selectedCompany = null;
+            this.form.company_id = null;
+            this.companySearch = '';
+        },
+
+        // Conditional tab visibility based on offer_type
+        get showAccommodationTab() {
+            return ['complete', 'hotel'].includes(this.form.offer_type);
+        },
+        get showToursTab() {
+            return ['complete', 'tours'].includes(this.form.offer_type);
+        },
+        get showTransportTab() {
+            return ['complete', 'transport'].includes(this.form.offer_type);
+        },
+        get showFlightsTab() {
+            return ['complete', 'tours', 'hotel', 'transport'].includes(this.form.offer_type);
+        },
+        get showAddonsTab() {
+            return true; // Always visible for all types
+        },
+
+        nextStep() {
+            if (this.currentStep < this.steps.length - 1) {
+                this.currentStep++;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        },
+
+        prevStep() {
+            if (this.currentStep > 0) {
+                this.currentStep--;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+        },
+
+        // City Distribution Methods
+        async searchCitiesInDestination() {
+            if (this.citySearch.length < 2) {
+                this.citySearchResults = [];
+                return;
+            }
+
+            try {
+                const country = this.form.primary_destination;
+                const response = await fetch(`{{ url('/api/v1/cities/search') }}?country=${encodeURIComponent(country)}&query=${encodeURIComponent(this.citySearch)}`, {
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'include'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    // Filter out already selected cities
+                    this.citySearchResults = data.data.filter(city => 
+                        !this.form.cities.find(c => c.id === city.id)
+                    );
+                }
+            } catch (error) {
+                console.error('Failed to search cities:', error);
+            }
+        },
+
+        addCity(city) {
+            if (!this.form.cities.find(c => c.id === city.id)) {
+                const newCity = {
+                    id: city.id,
+                    name: city.name,
+                    country: city.country,
+                    destination_id: city.destination_id || null,
+                    nights: 0,
+                    start_date: null,
+                    end_date: null,
+                    areas: [],
+                    selectedAreas: [],
+                    areaSearch: '',
+                    areaResults: []
+                };
+                this.form.cities.push(newCity);
+                this.citySearch = '';
+                this.citySearchResults = [];
+                this.loadAreasForCity(newCity);
+            }
+        },
+
+        removeCity(index) {
+            this.form.cities.splice(index, 1);
+            this.updateCityDates();
+        },
+
+        async loadAreasForCity(city) {
+            try {
+                const resp = await fetch(`{{ url('/api/v1/areas') }}?city=${encodeURIComponent(city.name)}` ,{
+                    headers: {
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'include'
+                });
+                const data = await resp.json();
+                city.areas = data.success ? data.data : [];
+            } catch (e) {
+                console.error('Load areas failed', e);
+                city.areas = [];
+            }
+        },
+
+        async searchAreaPlaces(city) {
+            if (!city.areaSearch || city.areaSearch.length < 2) {
+                city.areaResults = [];
+                return;
+            }
+            try {
+                const resp = await fetch(`{{ url('/api/v1/locations/autocomplete') }}` ,{
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ input: `${city.name} ${city.areaSearch}` })
+                });
+                const data = await resp.json();
+                city.areaResults = data.success ? data.data : [];
+            } catch (e) {
+                console.error('Area autocomplete failed', e);
+                city.areaResults = [];
+            }
+        },
+
+        async ingestArea(place, city) {
+            if (!city.destination_id) {
+                // attempt to resolve destination id by city name
+                // areas endpoint relies on Destination; skip ingest if unknown
+                console.warn('No destination_id for city; cannot ingest area');
+                return;
+            }
+            try {
+                const resp = await fetch(`{{ url('/api/v1/geo/ingest-area') }}` ,{
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-Tenant-ID': window.appConfig?.tenantId,
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({ place_id: place.place_id, destination_id: city.destination_id })
+                });
+                const data = await resp.json();
+                if (data.success && data.data?.area) {
+                    city.areas.push(data.data.area);
+                    city.areaResults = [];
+                    city.areaSearch = '';
+                } else {
+                    alert('Failed to add area: ' + (data.message || 'Unknown error'));
+                }
+            } catch (e) {
+                console.error('Ingest area failed', e);
+                alert('Unable to add area');
+            }
+        },
+
+        updateCityDates() {
+            if (!this.form.start_date || this.form.cities.length === 0) return;
+
+            let currentDate = new Date(this.form.start_date);
+            
+            this.form.cities.forEach(city => {
+                if (city.nights > 0) {
+                    city.start_date = new Date(currentDate);
+                    currentDate.setDate(currentDate.getDate() + city.nights);
+                    city.end_date = new Date(currentDate);
+                } else {
+                    city.start_date = null;
+                    city.end_date = null;
+                }
+            });
+        },
+
+        autoDistributeCities() {
+            if (this.form.cities.length === 0 || this.totalNights === 0) return;
+
+            // Simple auto-distribution: equal nights, give extra to first cities
+            const baseNights = Math.floor(this.totalNights / this.form.cities.length);
+            const extraNights = this.totalNights % this.form.cities.length;
+
+            this.form.cities.forEach((city, index) => {
+                city.nights = baseNights + (index < extraNights ? 1 : 0);
+            });
+
+            this.updateCityDates();
+        },
+
+        getCityColor(index) {
+            return this.cityColors[index % this.cityColors.length];
+        },
+
+        formatDate(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        },
+
+        hasRoutingIssues() {
+            // Simple check: if cities are not geographically ordered
+            return this.form.cities.length > 2;
+        },
+
+        getSuggestedOrder() {
+            // Return a suggestion (simplified)
+            return this.form.cities.map(c => c.name).join(' → ');
+        },
+
+        getCityRecommendations() {
+            const recommendations = [];
+            
+            if (this.form.cities.length === 0) {
+                recommendations.push('Add cities from your selected destination to start distributing nights');
+            } else if (this.totalDistributedNights === 0) {
+                recommendations.push('Assign nights to each city or use Auto-Distribute for quick setup');
+            } else if (this.totalDistributedNights < this.totalNights) {
+                recommendations.push(`You have ${this.totalNights - this.totalDistributedNights} unassigned nights`);
+            } else if (this.totalDistributedNights > this.totalNights) {
+                recommendations.push('You\'ve assigned more nights than the trip duration');
+            }
+            
+            if (this.form.cities.length > 3) {
+                recommendations.push('Consider if too many cities may affect travel quality');
+            }
+            
+            if (this.totalDistributedNights === this.totalNights && recommendations.length === 0) {
+                recommendations.push('Perfect distribution! All nights are assigned');
+                recommendations.push('City dates are automatically calculated based on your start date');
+            }
+            
+            return recommendations;
+        },
+
+        // Resource Management Methods
+        getCityForDay(dayIndex) {
+            if (!this.form.is_multi_city) {
+                return this.form.primary_destination;
+            }
+            
+            let currentNight = 0;
+            for (const city of this.form.cities) {
+                currentNight += city.nights;
+                if (dayIndex < currentNight) {
+                    return city.name;
+                }
+            }
+            
+            return this.form.cities[this.form.cities.length - 1]?.name || this.form.primary_destination;
+        },
+
+        isCityChangeDay(dayIndex) {
+            if (!this.form.is_multi_city || dayIndex === 0) return false;
+            
+            const currentCity = this.getCityForDay(dayIndex);
+            const previousCity = this.getCityForDay(dayIndex - 1);
+            
+            return currentCity !== previousCity;
+        },
+
+        getNextCity(dayIndex) {
+            if (!this.form.is_multi_city) return null;
+            return this.getCityForDay(dayIndex + 1);
+        },
+
+        formatFullDate(date) {
+            if (!date) return '';
+            const d = new Date(date);
+            return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+        },
+
+        getResourceCount(type) {
+            switch(type) {
+                case 'accommodation':
+                    return this.itinerary.filter(day => day.accommodation).length;
+                case 'tours':
+                    return this.itinerary.reduce((sum, day) => sum + (day.tours?.length || 0), 0);
+                case 'transport':
+                    return this.itinerary.filter(day => day.transport).length;
+                case 'flights':
+                    return (this.form.flight_outbound ? 1 : 0) + 
+                           (this.form.internal_flights?.length || 0) + 
+                           (this.form.flight_return ? 1 : 0);
+                case 'addons':
+                    return this.form.addons?.length || 0;
+                default:
+                    return 0;
+            }
+        },
+
+        openResourceSelector(dayIndex, resourceType) {
+            // Placeholder for resource selector modal
+            // In real implementation, this would open a modal to search/select resources
+            console.log('Opening resource selector:', { dayIndex, resourceType });
+            
+            // Demo: Add a mock resource for testing
+            if (resourceType === 'accommodation' && dayIndex !== null) {
+                this.itinerary[dayIndex].accommodation = {
+                    id: 1,
+                    name: 'Grand Hotel ' + this.itinerary[dayIndex].city,
+                    room_type: 'Deluxe Double Room',
+                    rating: '5★',
+                    meal_plan: 'Breakfast included'
+                };
+            } else if (resourceType === 'tours' && dayIndex !== null) {
+                if (!this.itinerary[dayIndex].tours) {
+                    this.itinerary[dayIndex].tours = [];
+                }
+                this.itinerary[dayIndex].tours.push({
+                    id: Date.now(),
+                    name: 'City Tour - ' + this.itinerary[dayIndex].city,
+                    duration: '4 hours',
+                    type: 'Private'
+                });
+            } else if (resourceType === 'transport' && dayIndex !== null) {
+                this.itinerary[dayIndex].transport = {
+                    id: 1,
+                    vehicle_type: 'Luxury Coach',
+                    duration: '3 hours'
+                };
+            } else if (resourceType === 'flight_outbound') {
+                this.form.flight_outbound = {
+                    id: 1,
+                    airline: 'Emirates',
+                    from: 'Dubai',
+                    to: this.form.primary_destination
+                };
+            } else if (resourceType === 'flight_return') {
+                this.form.flight_return = {
+                    id: 1,
+                    airline: 'Emirates',
+                    from: this.form.primary_destination,
+                    to: 'Dubai'
+                };
+            } else if (resourceType === 'addon') {
+                if (!this.form.addons) {
+                    this.form.addons = [];
+                }
+                this.form.addons.push({
+                    id: Date.now(),
+                    name: 'SIM Card',
+                    type: 'Connectivity'
+                });
+            }
+        },
+
+        removeResource(dayIndex, resourceType, itemIndex = null) {
+            if (dayIndex !== null && this.itinerary[dayIndex]) {
+                if (resourceType === 'accommodation') {
+                    this.itinerary[dayIndex].accommodation = null;
+                } else if (resourceType === 'tours' && itemIndex !== null) {
+                    this.itinerary[dayIndex].tours.splice(itemIndex, 1);
+                } else if (resourceType === 'transport') {
+                    this.itinerary[dayIndex].transport = null;
+                }
+            }
+        },
+
+            // Pricing Methods
+            calculateTotals() {
+                // Calculate per-category profit and margin
+                Object.keys(this.pricing).forEach(category => {
+                    const cat = this.pricing[category];
+                    cat.profit = (cat.sale || 0) - (cat.purchase || 0);
+                    cat.margin = cat.purchase > 0 ? ((cat.profit / cat.purchase) * 100) : 0;
+                });
+            },
+
+            applyMarkup(percentage) {
+                // Apply percentage markup to all categories
+                Object.keys(this.pricing).forEach(category => {
+                    const cat = this.pricing[category];
+                    if (cat.purchase > 0) {
+                        cat.sale = cat.purchase * (1 + percentage / 100);
+                    }
+                });
+                this.calculateTotals();
+            },
+
+            optimizePricing() {
+                // Smart pricing based on typical margins per category
+                const margins = {
+                    accommodation: 15,  // 15% typical for hotels
+                    tours: 20,          // 20% for tours
+                    transport: 18,      // 18% for transport
+                    flights: 8,         // 8% for flights (lower margin)
+                    addons: 25          // 25% for add-ons (highest)
+                };
+
+                Object.keys(this.pricing).forEach(category => {
+                    const cat = this.pricing[category];
+                    if (cat.purchase > 0) {
+                        cat.sale = cat.purchase * (1 + margins[category] / 100);
+                    }
+                });
+            
+                this.calculateTotals();
+            },
+
+            formatCurrency(amount) {
+                return new Intl.NumberFormat('en-US', {
+                    style: 'currency',
+                    currency: 'USD',
+                    minimumFractionDigits: 2
+                }).format(amount || 0);
+            },
+
+            async saveDraft() {
+            this.autoSaving = true;
+            setTimeout(() => {
+                this.autoSaving = false;
+            }, 2000);
+        }
+    }
+}
+</script>
+
+<!-- Flatpickr CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Start Date Picker
+    flatpickr('#start_date', {
+        dateFormat: 'Y-m-d',
+        minDate: 'today',
+        onChange: function(selectedDates, dateStr) {
+            // Update Alpine.js model
+            const alpineComponent = document.querySelector('[x-data]').__x.$data;
+            alpineComponent.form.start_date = dateStr;
+            alpineComponent.calculateDuration();
+        }
+    });
+
+    // End Date Picker
+    flatpickr('#end_date', {
+        dateFormat: 'Y-m-d',
+        minDate: 'today',
+        onChange: function(selectedDates, dateStr) {
+            const alpineComponent = document.querySelector('[x-data]').__x.$data;
+            alpineComponent.form.end_date = dateStr;
+            alpineComponent.calculateDuration();
+        }
+    });
+});
+</script>
+
+@endsection

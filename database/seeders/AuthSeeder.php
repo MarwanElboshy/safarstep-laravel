@@ -50,7 +50,7 @@ class AuthSeeder extends Seeder
         );
 
         // Create main admin user with specified credentials
-        $admin = User::firstOrCreate(
+        $admin = User::updateOrCreate(
             ['email' => 'iosmarawan@gmail.com'],
             [
                 'name' => 'SafarStep Admin',
@@ -63,7 +63,7 @@ class AuthSeeder extends Seeder
         );
 
         // Create additional test users
-        $opsManager = User::firstOrCreate(
+        $opsManager = User::updateOrCreate(
             ['email' => 'ops@safarstep.com'],
             [
                 'name' => 'Operations Manager',
@@ -75,7 +75,7 @@ class AuthSeeder extends Seeder
             ]
         );
 
-        $agent = User::firstOrCreate(
+        $agent = User::updateOrCreate(
             ['email' => 'agent@safarstep.com'],
             [
                 'name' => 'Booking Agent',

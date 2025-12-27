@@ -8,8 +8,10 @@ class TenantResolver
 {
     public function resolve(Request $request): ?TenantContext
     {
-        // Minimal placeholder strategy: header or querystring
-        $id = $request->header('X-Tenant-ID') ?: $request->query('tenant_id');
+        // Resolve tenant from header, querystring, or session (for web routes)
+        $id = $request->header('X-Tenant-ID')
+            ?: $request->query('tenant_id')
+            ?: ($request->hasSession() ? $request->session()->get('tenant_id') : null);
         if (!$id) {
             return null;
         }

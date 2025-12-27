@@ -8,12 +8,47 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Offer extends Model
 {
-    protected $fillable = ['tenant_id', 'created_by', 'title', 'slug', 'description', 'itinerary', 'start_date', 'end_date', 'duration_days', 'group_size', 'base_price', 'discount_percentage', 'final_price', 'includes', 'excludes', 'terms_and_conditions', 'status', 'views'];
+    protected $fillable = [
+        'tenant_id',
+        'department_id',
+        'created_by',
+        'customer_id',
+        'company_id',
+        'title',
+        'slug',
+        'description',
+        'destination',
+        'country_id',
+        'duration_days',
+        'start_date',
+        'end_date',
+        'price_per_person',
+        'currency_id',
+        'capacity',
+        'group_size',
+        'base_price',
+        'discount_percentage',
+        'final_price',
+        'image_url',
+        'inclusions',
+        'includes',
+        'exclusions',
+        'excludes',
+        'itinerary',
+        'terms_and_conditions',
+        'status',
+        'views',
+        'meta',
+    ];
 
     protected $casts = [
         'itinerary' => 'array',
+        'inclusions' => 'array',
         'includes' => 'array',
+        'exclusions' => 'array',
         'excludes' => 'array',
+        'meta' => 'array',
+        'price_per_person' => 'decimal:2',
         'base_price' => 'decimal:2',
         'final_price' => 'decimal:2',
         'discount_percentage' => 'decimal:2',
@@ -21,14 +56,40 @@ class Offer extends Model
         'end_date' => 'date',
     ];
 
+    // Tenant scoping
+    public function scopeForTenant($query, string $tenantId)
+    {
+        return $query->where('tenant_id', $tenantId);
+    }
+
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    public function currency(): BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
+    }
+
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class);
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     public function destinations()

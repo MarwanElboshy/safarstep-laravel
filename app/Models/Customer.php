@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Customer extends Model
 {
-    protected $fillable = ['tenant_id', 'first_name', 'last_name', 'email', 'phone', 'address', 'city', 'country', 'customer_type', 'loyalty_tier', 'total_bookings', 'total_spent', 'last_booking_date', 'status'];
+    protected $fillable = ['tenant_id', 'company_id', 'first_name', 'last_name', 'email', 'phone', 'address', 'city', 'country', 'nationality', 'source', 'customer_type', 'loyalty_tier', 'total_bookings', 'total_spent', 'last_booking_date', 'status'];
 
     protected $casts = [
         'total_spent' => 'decimal:2',
@@ -17,6 +17,11 @@ class Customer extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
     }
 
     public function getFullNameAttribute()

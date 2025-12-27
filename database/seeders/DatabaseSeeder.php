@@ -21,10 +21,12 @@ class DatabaseSeeder extends Seeder
             RolesSeeder::class,
             CurrencySeeder::class,
             AuthSeeder::class, // Add auth seeder with real credentials
+            UsersTableSeeder::class, // Additional users for testing
             DestinationSeeder::class,
             HotelSeeder::class,
             AddOnSeeder::class,
-            TagSeeder::class,
+              TurkishTransportSeeder::class,
+              CompanySeeder::class,
         ]);
 
         // Sample user for local testing

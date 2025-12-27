@@ -16,6 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Handle LiteSpeed trusted proxies for HTTPS detection
         $middleware->trustProxies(at: '*');
 
+        // Enable session for API routes (for session-based auth)
+        $middleware->statefulApi();
+
         $middleware->alias([
             'tenant' => \App\Http\Middleware\ResolveTenant::class,
             'enforce-tenant' => \App\Http\Middleware\EnsureTenantAccess::class,

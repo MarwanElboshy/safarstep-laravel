@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->id();
             $table->unsignedBigInteger('destination_id');
             $table->string('name');
-            $table->string('slug')->unique();
+            $table->string('slug');
             $table->text('description')->nullable();
             $table->integer('stars')->default(3); // 1-5 stars
             $table->string('address')->nullable();
@@ -27,6 +27,7 @@ return new class extends Migration {
             $table->foreign('destination_id')->references('id')->on('destinations')->onDelete('cascade');
             $table->index('destination_id');
             $table->index('status');
+            $table->unique(['destination_id', 'slug']);
         });
     }
 

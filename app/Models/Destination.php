@@ -3,10 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Destination extends Model
 {
+    use HasFactory;
     protected $fillable = ['name', 'slug', 'description', 'city', 'country', 'region', 'latitude', 'longitude', 'highlights'];
 
     protected $casts = [

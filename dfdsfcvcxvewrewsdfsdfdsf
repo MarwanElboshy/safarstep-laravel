@@ -1,0 +1,17 @@
+Found 2 customers matching 'a'
+[
+    {
+        "id": 1,
+        "name": "Marwan Elboshy",
+        "email": "iosmarawan@gmail.com",
+        "phone": "+201014748288",
+        "type": "individual"
+    },
+    {
+        "id": 2,
+        "name": "Mohamed",
+        "email": "ccc@gmail.com",
+        "phone": "201014597876",
+        "type": "individual"
+    }
+]

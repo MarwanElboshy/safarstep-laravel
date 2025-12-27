@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+    ],
+
+    'google' => [
+        'maps_key' => env('GOOGLE_MAPS_KEY'),
+    ],
+
 ];

@@ -49,7 +49,7 @@
                             </div>
                             <div class="ml-4">
                                 <h3 class="text-xl font-semibold text-white">Enterprise Security</h3>
-                                <p class="text-blue-100">Multi-tenant isolation with role-based access control</p>
+                                <p class="text-blue-100">Organization-wide access control with role-based permissions</p>
                             </div>
                         </div>
                         <div class="flex items-center opacity-0 translate-x-8" data-delay="200">
@@ -208,17 +208,80 @@ function enterpriseAuth(){
     loading:false,error:'',success:'',showPassword:false,
     emailValidation:{checking:false,valid:false},
     availableTenants:[],tenantInfo:null,tenantDetectionTimer:null,
-    init(){this.$nextTick(()=>{new WallpaperManager();});},
+        init(){this.$nextTick(()=>{new WallpaperManager();});},
+        // Fetch helpers to avoid 419 (CSRF) by bootstrapping Sanctum cookie when needed
+        getMetaCsrf(){
+            try{
+                const el=document.querySelector('meta[name="csrf-token"]');
+                return el?el.getAttribute('content'):null;
+            }catch(e){
+                return null;
+            }
+        },
+        async bootstrapCsrf(){
+            try{
+                await fetch(`${BASE_URL}/sanctum/csrf-cookie`,{credentials:'include'});
+            }catch(_){/* ignore */}
+        },
+        async apiPostJson(path,payload){
+            // First try stateless JSON (no cookies)
+            let resp = await fetch(`${API_BASE}${path}`,{
+                method:'POST',
+                headers:{'Content-Type':'application/json','Accept':'application/json'},
+                credentials:'omit',
+                body:JSON.stringify(payload)
+            });
+            if(resp.status===419){
+                // Fallback: bootstrap CSRF + retry with cookies
+                await this.bootstrapCsrf();
+                const xsrf = (document.cookie.match(/XSRF-TOKEN=([^;]+)/)||[])[1];
+                resp = await fetch(`${API_BASE}${path}`,{
+                    method:'POST',
+                    headers:{'Content-Type':'application/json','Accept':'application/json',...(xsrf?{'X-XSRF-TOKEN':decodeURIComponent(xsrf)}:{})},
+                    credentials:'include',
+                    body:JSON.stringify(payload)
+                });
+            }
+            return resp;
+        },
     async validateExistingSession(token){try{const r=await fetch(`${API_BASE}/v1/auth/me`,{headers:{'Authorization':`Bearer ${token}`,'Accept':'application/json'}});const j=await r.json();if(j.success){window.location.href=DASHBOARD_URL;}}catch(_){}}
     ,clearStoredAuth(){['safarstep_token','safarstep_user','safarstep_permissions','safarstep_refresh_token'].forEach(k=>{localStorage.removeItem(k);sessionStorage.removeItem(k);});},
-    validateEmail(){if(!this.form.email||!this.form.email.includes('@')){this.emailValidation.valid=false;return;}clearTimeout(this.tenantDetectionTimer);this.tenantDetectionTimer=setTimeout(async()=>{this.emailValidation.checking=true;this.error='';try{const r=await fetch(`${API_BASE}/v1/auth/check-email`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email:this.form.email})});const j=await r.json();if(j.success&&j.data.exists){this.emailValidation.valid=true;}else{this.emailValidation.valid=false;this.error='Email not found. Please check your email address.'}}catch(_){this.error='Unable to verify email address. Please try again.';this.emailValidation.valid=false;}finally{this.emailValidation.checking=false;}},800);},
+        validateEmail(){
+            if(!this.form.email||!this.form.email.includes('@')){this.emailValidation.valid=false;return;}
+            clearTimeout(this.tenantDetectionTimer);
+            this.tenantDetectionTimer=setTimeout(async()=>{
+                this.emailValidation.checking=true;this.error='';
+                try{
+                    const r=await this.apiPostJson('/v1/auth/check-email',{email:this.form.email});
+                    const j=await r.json();
+                    if(j.success&&j.data.exists){this.emailValidation.valid=true;}else{this.emailValidation.valid=false;this.error='Email not found. Please check your email address.'}
+                }catch(_){this.error='Unable to verify email address. Please try again.';this.emailValidation.valid=false;}
+                finally{this.emailValidation.checking=false;}
+            },800);
+        },
     canProceed(){switch(this.currentStep){case 1:return this.form.email&&this.form.email.includes('@')&&this.emailValidation.valid&&!this.emailValidation.checking;case 2:return !!this.form.password;case 3:return this.form.tenant_id!==null;default:return false;}},
     getButtonText(){if(this.loading){return this.currentStep===1?'Verifying...':this.currentStep===2?'Checking...':'Signing In...';}return this.currentStep===1?'Continue':this.currentStep===2?'Next':'Sign In';},
     async handleSubmit(){this.error='';if(!this.canProceed()){this.focusCurrentStepField();return;}if(this.currentStep===1){this.currentStep=2;return;}if(this.currentStep===2){await this.validatePasswordAndLoadTenants();return;}await this.performLogin();},
     focusCurrentStepField(){this.$nextTick(()=>{if(this.currentStep===1){document.getElementById('email')?.focus();}else if(this.currentStep===2){document.getElementById('password')?.focus();}});},
-    async validatePasswordAndLoadTenants(){this.loading=true;this.error='';try{const r=await fetch(`${API_BASE}/v1/auth/validate-credentials`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify({email:this.form.email,password:this.form.password})});const j=await r.json();if(j.success&&j.data.tenants){this.availableTenants=j.data.tenants;if(this.availableTenants.length===1){this.tenantInfo=this.availableTenants[0];this.form.tenant_id=this.availableTenants[0].id;}this.currentStep=3;}else{this.error=j.message||'Invalid credentials. Please check your password.'}}catch(_){this.error='Network error. Please try again.'}finally{this.loading=false;}},
+        async validatePasswordAndLoadTenants(){
+            this.loading=true;this.error='';
+            try{
+                const r=await this.apiPostJson('/v1/auth/validate-credentials',{email:this.form.email,password:this.form.password});
+                const j=await r.json();
+                if(j.success&&j.data.tenants){this.availableTenants=j.data.tenants;if(this.availableTenants.length===1){this.tenantInfo=this.availableTenants[0];this.form.tenant_id=this.availableTenants[0].id;}this.currentStep=3;}else{this.error=j.message||'Invalid credentials. Please check your password.'}
+            }catch(_){this.error='Network error. Please try again.'}
+            finally{this.loading=false;}
+        },
     goBack(){if(this.currentStep>1){this.currentStep--;this.error='';}},
-    async performLogin(){this.loading=true;this.error='';try{const r=await fetch(`${API_BASE}/v1/auth/login`,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(this.form)});const j=await r.json();if(j.success){const storage=this.form.remember?localStorage:sessionStorage;storage.setItem('safarstep_token',j.data.access_token);storage.setItem('safarstep_user',JSON.stringify(j.data.user));storage.setItem('safarstep_permissions',JSON.stringify(j.data.permissions||[]));if(j.data.refresh_token){storage.setItem('safarstep_refresh_token',j.data.refresh_token);}this.success='Authentication successful. Redirecting to dashboard...';setTimeout(()=>{window.location.href=DASHBOARD_URL;},1500);}else{this.error=j.message||'Authentication failed. Please verify your credentials and try again.';this.currentStep=2;this.clearStoredAuth();}}catch(_){this.error='Network connection error. Please try again.';this.currentStep=2;}finally{this.loading=false;}}
+        async performLogin(){
+            this.loading=true;this.error='';
+            try{
+                const r=await this.apiPostJson('/v1/auth/login',this.form);
+                const j=await r.json();
+                if(j.success){const storage=this.form.remember?localStorage:sessionStorage;storage.setItem('safarstep_token',j.data.access_token);storage.setItem('safarstep_user',JSON.stringify(j.data.user));storage.setItem('safarstep_permissions',JSON.stringify(j.data.permissions||[]));if(j.data.refresh_token){storage.setItem('safarstep_refresh_token',j.data.refresh_token);}this.success='Authentication successful. Redirecting to dashboard...';setTimeout(()=>{window.location.href=DASHBOARD_URL;},1500);}else{this.error=j.message||'Authentication failed. Please verify your credentials and try again.';this.currentStep=2;this.clearStoredAuth();}
+            }catch(_){this.error='Network connection error. Please try again.';this.currentStep=2;}
+            finally{this.loading=false;}
+        }
   }
 }
 

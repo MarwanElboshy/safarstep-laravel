@@ -1,3 +1,4 @@
+-- Active: 1766587434811@@127.0.0.1@3306@safarstep_beta
 This repository hosts SafarStep’s migration to a Laravel 12 backend API and a Tailwind-powered dashboard. Use these instructions to help GitHub Copilot coding agent build, test, and propose changes effectively.
 
 ## Development Flow
@@ -7,6 +8,7 @@ This repository hosts SafarStep’s migration to a Laravel 12 backend API and a 
 - Migrate DB: `php artisan migrate`
 - Seed data: `php artisan db:seed`
 - Run tests: `php artisan test`
+- *Old Project located at: /home/safarstep/public_html/v2/.old-project*
 
 ## Acceptance Criteria (for PRs)
 - Include unit/feature tests for new backend logic
@@ -36,6 +38,17 @@ This repository hosts SafarStep’s migration to a Laravel 12 backend API and a 
 - Use middleware/policies/gates for permission checks
 - Place business logic in service classes; keep controllers thin
 
+### Tenant + RBAC Best Practices
+- UI/API Headers: Always include `X-Tenant-ID` from resolved context; never hardcode tenant IDs. Frontend should use `window.appConfig.tenantId`.
+- Spatie Teams: Set and clear the Spatie `PermissionRegistrar` team ID on every request via middleware; scopes permissions/roles by tenant.
+- Controllers: Filter queries by `tenant_id` consistently. Use `withCount()` and relationships with tenant constraints for aggregates.
+- Policies: Enforce tenant checks first, then permission checks (e.g., `view_departments`, `edit_departments`).
+- Routes: All endpoints under `/api/v1` must validate auth and tenant ownership; forbid cross-tenant resource access.
+- Database: Include `tenant_id` columns and indexes on tenant-bound tables; add tenant columns to Spatie tables (`roles`, `model_has_roles`, `model_has_permissions`).
+- Testing: In feature tests, set `PermissionRegistrar` team ID and seed minimal tenant data. Verify isolation (cannot access other tenant resources).
+- Caching: If caching per tenant, namespace keys by tenant ID and invalidate on tenant-scoped changes.
+- Auditing: Log tenant ID in audit logs for traceability.
+
 ## Backend Standards
 - Framework: Laravel 12, PHP 8.2+
 - Auth: Sanctum (token-based); see notes in `docs/ENVIRONMENT.md`
@@ -47,6 +60,14 @@ This repository hosts SafarStep’s migration to a Laravel 12 backend API and a 
 - Tooling: Vite, Tailwind 4; framework selection: Vue 3 or React (TypeScript)
 - Component library follows the 3-color tenant branding system
 - Accessibility (WCAG AA), i18n, and responsive design are required
+
+## URL Handling - CRITICAL
+**ALWAYS respect the APP_URL configuration:**
+- Backend: Use Laravel helpers `asset()`, `url()`, `route()` for all URLs
+- Frontend: Use `window.appConfig.baseUrl` for page URLs, `window.appConfig.apiUrl` for API calls
+- Never hardcode URLs like `/api/v1/...` or `/dashboard/...` - always use the configured base
+- Asset paths: `asset('assets/...')` NOT `asset('public/assets/...')` (public is implicit)
+- The app may be deployed in subdirectories, so relative paths break without proper base URLs
 
 ## SafarStep Brand Identity
 - **Brand Name:** SafarStep (multi-tenant SaaS tourism management platform)
@@ -67,6 +88,15 @@ This repository hosts SafarStep’s migration to a Laravel 12 backend API and a 
   - Demo tenant primary: `#2A50BC`
   - Demo tenant secondary: `#10B981`
   - Settings include prefixes (BK, INV, PAY, VCH, OFF) for reference numbers
+
+## Business Terminology (UI Copy)
+- Avoid technical terms like "tenant" in user-facing UI.
+- Prefer business-friendly terms: "Organization", "Company", or "Account" depending on context.
+- Examples:
+  - "Tenant scoped" → "Organization-wide"
+  - "Select tenant" → "Select organization"
+- Keep technical terms (tenant IDs, headers) within backend code, APIs, and developer docs only.
+- Ensure all labels, helper text, and banners reflect business language consistently across views.
 
 ## Using Copilot Coding Agent
 - Respect repository-wide and path-specific instructions under `.github/instructions/`
